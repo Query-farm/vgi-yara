@@ -1,0 +1,46 @@
+[workspace]
+resolver = "2"
+members = ["crates/yara-worker"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.86"
+license = "MIT"
+authors = ["Query Farm LLC <hello@query.farm>"]
+repository = "https://github.com/Query-farm/vgi-yara"
+
+[workspace.dependencies]
+# VGI Rust SDK (worker side), published on crates.io. Pulls in vgi-rpc 0.2 and
+# arrow 58 transitively; keep arrow/vgi-rpc here in lockstep with vgi's pins so a
+# single arrow/vgi-rpc resolves.
+vgi = "0.5.0"
+vgi-rpc = { version = "0.2.0", default-features = false, features = ["macros", "http"] }
+arrow-array = "58"
+arrow-buffer = "58"
+arrow-schema = "58"
+
+# YARA-X — VirusTotal's official pure-Rust YARA rewrite (compiles rules + scans,
+# NO native libyara/C dependency). Pinned to =1.7.0 because that is the newest
+# release whose declared rust-version (1.86) — and whose actual transitive deps —
+# resolve under our workspace `rust-version = 1.86`; yara-x 1.8+ bumps MSRV to
+# 1.87+. License: BSD-3-Clause (the crate) over Apache/BSD/MIT deps.
+#
+# default-features are off (they drag in the heavy `vt`/`dotnet`/`macho`/`lnk`/
+# `cuckoo`/`dex`/`crx` modules and proto codegen we don't need); we enable just
+# the standard malware-rule modules so common rules (hash/pe/elf/math/…) compile.
+yara-x = { version = "=1.7.0", default-features = false, features = [
+    "constant-folding",
+    "fast-regexp",
+    "exact-atoms",
+    "hash-module",
+    "pe-module",
+    "elf-module",
+    "math-module",
+    "string-module",
+    "time-module",
+    "console-module",
+] }
+
+[profile.release]
+opt-level = 2

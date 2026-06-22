@@ -1,0 +1,97 @@
+# name: test/sql/tables.test
+# group: [vgi_yara]
+#
+# Table functions: yara_scan() yields one row per matching rule (rule, namespace,
+# tags VARCHAR[]); yara_string_matches() yields one row per pattern hit (rule,
+# identifier, offset, matched). Both take CONSTANT arguments (no subqueries), so
+# data and rules are supplied as SQL literals. Invalid rules → a clear error;
+# non-matching / hostile / NULL data → no rows (the worker stays alive).
+
+require-env VGI_YARA_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'yara' AS yara (TYPE vgi, LOCATION '${VGI_YARA_WORKER}');
+
+statement ok
+SET search_path = 'yara.main';
+
+# yara_scan over a multi-rule set: one row per matching rule, ORDER BY rule.
+query TT
+SELECT rule, namespace
+FROM yara_scan('evil worm', 'rule alpha { strings: $a = "evil" condition: $a } rule beta { strings: $b = "worm" condition: $b }')
+ORDER BY rule;
+----
+alpha	default
+beta	default
+
+# Tags surface as a VARCHAR[] — UNNEST them, ORDER BY the tag.
+query T
+SELECT t
+FROM yara_scan('evil worm', 'rule alpha : malicious trojan { strings: $a = "evil" condition: $a }') s,
+     UNNEST(s.tags) AS u(t)
+ORDER BY t;
+----
+malicious
+trojan
+
+# A rule with no tags → an empty tag list.
+query I
+SELECT len(tags) FROM yara_scan('evil', 'rule alpha { strings: $a = "evil" condition: $a }');
+----
+0
+
+# yara_string_matches: offset + matched text of each pattern hit.
+query TTIT
+SELECT rule, identifier, "offset", matched
+FROM yara_string_matches('0123malware', 'rule demo { strings: $a = "malware" condition: $a }')
+ORDER BY "offset";
+----
+demo	$a	4	malware
+
+# Multiple hits of the same pattern → multiple rows, ascending offset.
+query IT
+SELECT "offset", matched
+FROM yara_string_matches('malware and malware', 'rule demo { strings: $a = "malware" condition: $a }')
+ORDER BY "offset";
+----
+0	malware
+12	malware
+
+# A binary (hex) pattern's matched bytes render as a hex string.
+query T
+SELECT matched
+FROM yara_string_matches('\xDE\xAD\xBE\xEF tail'::BLOB, 'rule h { strings: $a = { DE AD BE EF } condition: $a }');
+----
+deadbeef
+
+# Non-matching data → no rows.
+query I
+SELECT count(*) FROM yara_scan('clean data', 'rule demo { strings: $a = "malware" condition: $a }');
+----
+0
+
+# Hostile binary BLOB → no rows, worker stays alive.
+query I
+SELECT count(*) FROM yara_scan('\x00\x01\x02\xFF\xFE\x7F garbage'::BLOB, 'rule demo { strings: $a = "malware" condition: $a }');
+----
+0
+
+# NULL data → no rows.
+query I
+SELECT count(*) FROM yara_scan(NULL::BLOB, 'rule demo { condition: true }');
+----
+0
+
+# Invalid rule source surfaces a clear DuckDB error.
+statement error
+SELECT * FROM yara_scan('x', 'rule broken { condition: }');
+----
+
+statement ok
+USE memory;
+
+statement ok
+DETACH yara;

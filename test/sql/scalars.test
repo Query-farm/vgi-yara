@@ -1,0 +1,102 @@
+# name: test/sql/scalars.test
+# group: [vgi_yara]
+#
+# Scalar surface over (data, rules): yara_matches / yara_first_rule /
+# yara_match_count, plus yara_check (rule validation). Data and rules are SQL
+# literals. Invalid rules → a clear error; non-matching data → false / NULL / 0.
+
+require-env VGI_YARA_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'yara' AS yara (TYPE vgi, LOCATION '${VGI_YARA_WORKER}');
+
+statement ok
+SET search_path = 'yara.main';
+
+# Matching data → true.
+query I
+SELECT yara_matches('this is malware', 'rule demo { strings: $a = "malware" condition: $a }');
+----
+true
+
+# Non-matching data → false.
+query I
+SELECT yara_matches('perfectly clean', 'rule demo { strings: $a = "malware" condition: $a }');
+----
+false
+
+# First matching rule identifier.
+query T
+SELECT yara_first_rule('has evil worm', 'rule alpha { strings: $a = "evil" condition: $a } rule beta { strings: $b = "worm" condition: $b }');
+----
+alpha
+
+# No match → NULL first rule.
+query I
+SELECT yara_first_rule('clean', 'rule demo { strings: $a = "malware" condition: $a }') IS NULL;
+----
+true
+
+# Match count across a multi-rule set.
+query I
+SELECT yara_match_count('evil worm', 'rule alpha { strings: $a = "evil" condition: $a } rule beta { strings: $b = "worm" condition: $b }');
+----
+2
+
+query I
+SELECT yara_match_count('nothing here', 'rule alpha { strings: $a = "evil" condition: $a } rule beta { strings: $b = "worm" condition: $b }');
+----
+0
+
+# Scan a binary BLOB literal (hostile-ish bytes): no match, worker stays alive.
+query I
+SELECT yara_matches('\xDE\xAD\xBE\xEF\x00\x01'::BLOB, 'rule demo { strings: $a = "malware" condition: $a }');
+----
+false
+
+# A hex-pattern rule matching binary BLOB bytes → true.
+query I
+SELECT yara_matches('\xDE\xAD\xBE\xEF'::BLOB, 'rule h { strings: $a = { DE AD BE EF } condition: $a }');
+----
+true
+
+# yara_check: valid rules → true, invalid → false (validation, not an error).
+query I
+SELECT yara_check('rule ok { condition: true }');
+----
+true
+
+query I
+SELECT yara_check('rule broken { condition: }');
+----
+false
+
+# NULL inputs → NULL.
+query I
+SELECT yara_matches(NULL, 'rule demo { condition: true }') IS NULL;
+----
+true
+
+query I
+SELECT yara_matches('x', NULL) IS NULL;
+----
+true
+
+query I
+SELECT yara_check(NULL) IS NULL;
+----
+true
+
+# Invalid rule source surfaces a clear DuckDB error (in the scan scalars).
+statement error
+SELECT yara_matches('x', 'rule broken { condition: }');
+----
+
+statement ok
+USE memory;
+
+statement ok
+DETACH yara;
