@@ -4,7 +4,9 @@
 
 <p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
 
-# vgi-yara
+# Scan Data & Files against YARA Rules in DuckDB
+
+> **vgi-yara** · a [Query.Farm](https://query.farm) VGI worker · powered by yara-x
 
 A [VGI](https://query.farm) worker (Rust, a compiled binary) that brings
 **YARA malware scanning** to DuckDB / SQL over Apache Arrow. DuckDB launches the
