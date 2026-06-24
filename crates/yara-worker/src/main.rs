@@ -29,6 +29,7 @@
 //! an error. Only an *invalid rule source* surfaces a (clear) DuckDB error.
 
 mod arrow_io;
+mod meta;
 mod scalar;
 mod scanning;
 mod table;
@@ -54,6 +55,17 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 .to_string(),
         ),
         tags: vec![
+            (
+                "vgi.title".to_string(),
+                "YARA Malware Scanning".to_string(),
+            ),
+            (
+                "vgi.keywords".to_string(),
+                "yara, yara-x, malware, malware scanning, threat hunting, IOC, indicator of \
+                 compromise, signature, rule, detection, security, antivirus, blob scan, \
+                 pattern matching, defensive security"
+                    .to_string(),
+            ),
             (
                 "vgi.description_llm".to_string(),
                 "Scan bytes or text for malware/IOC signatures using YARA rules, entirely in SQL. \
@@ -101,6 +113,23 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             name: "main".to_string(),
             comment: Some("YARA rule compilation and malware-scanning functions.".to_string()),
             tags: vec![
+                ("vgi.title".to_string(), "YARA — main".to_string()),
+                (
+                    "vgi.keywords".to_string(),
+                    "yara, malware, scan, yara_matches, yara_first_rule, yara_match_count, \
+                     yara_check, yara_scan, yara_string_matches, yara_version, rule compilation, \
+                     threat hunting, IOC, signature detection"
+                        .to_string(),
+                ),
+                // VGI123 classifying tags (bare keys: domain/category/topic) for faceting.
+                ("domain".to_string(), "security".to_string()),
+                ("category".to_string(), "malware-scanning".to_string()),
+                ("topic".to_string(), "yara-rule-matching".to_string()),
+                (
+                    "vgi.source_url".to_string(),
+                    "https://github.com/Query-farm/vgi-yara/blob/main/crates/yara-worker/src/main.rs"
+                        .to_string(),
+                ),
                 (
                     "vgi.description_llm".to_string(),
                     "YARA malware-scanning functions: scan a column of blobs/text against a YARA \
@@ -111,6 +140,18 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 (
                     "vgi.description_md".to_string(),
                     "YARA rule compilation and malware-scanning functions over Apache Arrow."
+                        .to_string(),
+                ),
+                // VGI506 representative example queries for the schema.
+                (
+                    "vgi.example_queries".to_string(),
+                    "SELECT yara.main.yara_version();\n\
+                     SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }');\n\
+                     SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
+                     SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
+                     SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }');\n\
+                     SELECT * FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
+                     SELECT * FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"
                         .to_string(),
                 ),
             ],

@@ -26,6 +26,14 @@ impl ScalarFunction for YaraVersion {
                 description: "Report the version of the YARA worker.".into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "YARA Worker Version",
+                "Return the semantic version string of the running YARA worker binary. Useful for \
+                 diagnostics and confirming which build is attached. Takes no arguments.",
+                "Return the YARA worker version string, e.g. `yara_version()` → '0.1.0'.",
+                "version, build version, yara_version, diagnostics, worker version, semver",
+                "scalar/version.rs",
+            ),
             ..Default::default()
         }
     }

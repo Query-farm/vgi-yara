@@ -37,6 +37,17 @@ impl ScalarFunction for YaraCheck {
                     .into(),
                 expected_output: None,
             }],
+            tags: crate::meta::object_tags(
+                "Validate YARA Ruleset Compiles",
+                "Return true if the given YARA rule source compiles into a valid ruleset, false \
+                 otherwise. This is the dedicated \"does it compile?\" predicate: unlike the scan \
+                 scalars, a non-compiling source returns false rather than raising an error. NULL \
+                 input yields NULL. Use it to validate user-supplied rules before scanning.",
+                "Return `true` if the YARA rule source compiles, else `false` (NULL → NULL).",
+                "yara_check, validate, compile, rule validation, lint rules, syntax check, \
+                 ruleset valid, does it compile",
+                "scalar/check.rs",
+            ),
             ..Default::default()
         }
     }

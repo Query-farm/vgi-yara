@@ -33,6 +33,30 @@ impl TableFunction for YaraStringMatches {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let mut tags = crate::meta::object_tags(
+            "Scan Data Into Pattern Hits",
+            "Scan a constant blob/text against a YARA ruleset and return one row per individual \
+             pattern hit: which rule and string identifier matched, the byte offset of the hit, \
+             and the matched bytes (rendered as UTF-8 when printable, else lowercase hex). Both \
+             arguments are bind-time constants. An invalid rule source is a clear DuckDB error; \
+             no hits, or hostile/NULL data, yields zero rows.",
+            "Scan a constant blob against a ruleset; one row per pattern hit. Columns: `rule`, \
+             `identifier`, `offset`, `matched`.",
+            "yara_string_matches, pattern hit, string match, offset, matched bytes, identifier, \
+             per-pattern, forensics, where matched, table function",
+            "table/string_matches.rs",
+        );
+        tags.push((
+            "vgi.columns_md".into(),
+            "| column | type | description |\n\
+             |---|---|---|\n\
+             | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
+             | `identifier` | VARCHAR | Pattern/string identifier that hit, e.g. `$a`. |\n\
+             | `offset` | BIGINT | Byte offset of the match within the scanned data. |\n\
+             | `matched` | VARCHAR | Matched bytes as UTF-8 when printable, else lowercase \
+             hex (NULL if unavailable). |"
+                .into(),
+        ));
         FunctionMetadata {
             description:
                 "Scan data against YARA rules; one row per pattern hit (rule, identifier, offset, matched)"
@@ -46,17 +70,7 @@ impl TableFunction for YaraStringMatches {
                     .into(),
                 expected_output: None,
             }],
-            tags: vec![(
-                "vgi.columns_md".into(),
-                "| column | type | description |\n\
-                 |---|---|---|\n\
-                 | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
-                 | `identifier` | VARCHAR | Pattern/string identifier that hit, e.g. `$a`. |\n\
-                 | `offset` | BIGINT | Byte offset of the match within the scanned data. |\n\
-                 | `matched` | VARCHAR | Matched bytes as UTF-8 when printable, else lowercase \
-                 hex (NULL if unavailable). |"
-                    .into(),
-            )],
+            tags,
             ..Default::default()
         }
     }
