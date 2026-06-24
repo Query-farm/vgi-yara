@@ -67,7 +67,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             (
-                "vgi.description_llm".to_string(),
+                "vgi.doc_llm".to_string(),
                 "Scan bytes or text for malware/IOC signatures using YARA rules, entirely in SQL. \
                  Per-row scalars test a column of blobs against a YARA ruleset \
                  (`yara_matches` → does it match any rule, `yara_first_rule` → first matching \
@@ -82,7 +82,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     .to_string(),
             ),
             (
-                "vgi.description_md".to_string(),
+                "vgi.doc_md".to_string(),
                 "# yara\n\nDefensive **YARA-X** malware scanning over Apache Arrow, powered by \
                  VirusTotal's pure-Rust YARA rewrite (no native libyara).\n\n**Scalars:** \
                  `yara_matches` (BOOLEAN), `yara_first_rule` (VARCHAR), `yara_match_count` \
@@ -131,14 +131,14 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                         .to_string(),
                 ),
                 (
-                    "vgi.description_llm".to_string(),
+                    "vgi.doc_llm".to_string(),
                     "YARA malware-scanning functions: scan a column of blobs/text against a YARA \
                      ruleset (match predicate, first matching rule, match count), validate that a \
                      ruleset compiles, and fan a constant blob into per-rule or per-pattern hits."
                         .to_string(),
                 ),
                 (
-                    "vgi.description_md".to_string(),
+                    "vgi.doc_md".to_string(),
                     "YARA rule compilation and malware-scanning functions over Apache Arrow."
                         .to_string(),
                 ),

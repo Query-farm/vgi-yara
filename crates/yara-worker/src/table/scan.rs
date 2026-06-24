@@ -84,7 +84,7 @@ impl TableFunction for YaraScan {
             "table/scan.rs",
         );
         tags.push((
-            "vgi.columns_md".into(),
+            "vgi.result_columns_md".into(),
             "| column | type | description |\n\
              |---|---|---|\n\
              | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
