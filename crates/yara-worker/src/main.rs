@@ -33,11 +33,93 @@ mod scalar;
 mod scanning;
 mod table;
 
+use vgi::catalog::{CatSchema, CatalogModel};
 use vgi::Worker;
 
 /// Worker version string, surfaced by `yara_version()`.
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
+}
+
+/// Catalog + schema metadata (description, provenance) surfaced to DuckDB and the
+/// `vgi-lint` metadata-quality linter. The function objects themselves are served
+/// from the registered scalars/tables; this only adds catalog/schema-level
+/// comments and tags.
+fn catalog_metadata(name: &str) -> CatalogModel {
+    CatalogModel {
+        name: name.to_string(),
+        comment: Some(
+            "Defensive YARA-X malware scanning: compile YARA rules and scan blobs/text for \
+             matches, all in SQL over Apache Arrow."
+                .to_string(),
+        ),
+        tags: vec![
+            (
+                "vgi.description_llm".to_string(),
+                "Scan bytes or text for malware/IOC signatures using YARA rules, entirely in SQL. \
+                 Per-row scalars test a column of blobs against a YARA ruleset \
+                 (`yara_matches` → does it match any rule, `yara_first_rule` → first matching \
+                 rule, `yara_match_count` → number of matching rules), validate that a ruleset \
+                 compiles (`yara_check`), and report the worker version (`yara_version`). Table \
+                 functions fan one constant blob into its hits: `yara_scan` yields one row per \
+                 matching rule (rule, namespace, tags), `yara_string_matches` yields one row per \
+                 pattern hit (rule, identifier, offset, matched bytes). Use for malware triage, \
+                 threat hunting, and IOC matching over data already in DuckDB. Scanning is total \
+                 — untrusted/hostile data never crashes the worker; only an invalid rule source \
+                 is an error."
+                    .to_string(),
+            ),
+            (
+                "vgi.description_md".to_string(),
+                "# yara\n\nDefensive **YARA-X** malware scanning over Apache Arrow, powered by \
+                 VirusTotal's pure-Rust YARA rewrite (no native libyara).\n\n**Scalars:** \
+                 `yara_matches` (BOOLEAN), `yara_first_rule` (VARCHAR), `yara_match_count` \
+                 (INT), `yara_check` (BOOLEAN), `yara_version` (VARCHAR).\n\n**Tables:** \
+                 `yara_scan` (rule, namespace, tags[]), `yara_string_matches` (rule, identifier, \
+                 offset, matched).\n\nScanning is total: untrusted/garbage/empty/hostile data \
+                 yields no matches rather than crashing; only an invalid rule source raises an \
+                 error (except `yara_check`, which returns `false`)."
+                    .to_string(),
+            ),
+            ("vgi.author".to_string(), "Query.Farm".to_string()),
+            (
+                "vgi.copyright".to_string(),
+                "Copyright 2026 Query Farm LLC - https://query.farm".to_string(),
+            ),
+            ("vgi.license".to_string(), "MIT".to_string()),
+            (
+                "vgi.support_contact".to_string(),
+                "https://github.com/Query-farm/vgi-yara/issues".to_string(),
+            ),
+            (
+                "vgi.support_policy_url".to_string(),
+                "https://github.com/Query-farm/vgi-yara/blob/main/README.md".to_string(),
+            ),
+        ],
+        source_url: Some("https://github.com/Query-farm/vgi-yara".to_string()),
+        schemas: vec![CatSchema {
+            name: "main".to_string(),
+            comment: Some("YARA rule compilation and malware-scanning functions.".to_string()),
+            tags: vec![
+                (
+                    "vgi.description_llm".to_string(),
+                    "YARA malware-scanning functions: scan a column of blobs/text against a YARA \
+                     ruleset (match predicate, first matching rule, match count), validate that a \
+                     ruleset compiles, and fan a constant blob into per-rule or per-pattern hits."
+                        .to_string(),
+                ),
+                (
+                    "vgi.description_md".to_string(),
+                    "YARA rule compilation and malware-scanning functions over Apache Arrow."
+                        .to_string(),
+                ),
+            ],
+            views: Vec::new(),
+            macros: Vec::new(),
+            tables: Vec::new(),
+        }],
+        ..Default::default()
+    }
 }
 
 fn main() {
@@ -51,9 +133,12 @@ fn main() {
     if std::env::var_os("VGI_WORKER_CATALOG_NAME").is_none() {
         std::env::set_var("VGI_WORKER_CATALOG_NAME", "yara");
     }
+    let catalog_name =
+        std::env::var("VGI_WORKER_CATALOG_NAME").unwrap_or_else(|_| "yara".to_string());
 
     let mut worker = Worker::new();
     scalar::register(&mut worker);
     table::register(&mut worker);
+    worker.set_catalog(catalog_metadata(&catalog_name));
     worker.run();
 }

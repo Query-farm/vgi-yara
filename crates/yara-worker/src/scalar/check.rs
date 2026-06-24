@@ -8,7 +8,10 @@ use std::sync::Arc;
 use arrow_array::builder::BooleanBuilder;
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::DataType;
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams, ScalarFunction};
+use vgi::{
+    ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams,
+    ScalarFunction,
+};
 use vgi_rpc::{Result, RpcError};
 
 use crate::arrow_io::text_str;
@@ -26,6 +29,14 @@ impl ScalarFunction for YaraCheck {
             description: "True if the YARA rule source compiles, false otherwise (validation)"
                 .into(),
             return_type: Some(DataType::Boolean),
+            examples: vec![FunctionExample {
+                sql: "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" \
+                      condition: $a }');"
+                    .into(),
+                description: "Validate that a YARA ruleset compiles before using it to scan."
+                    .into(),
+                expected_output: None,
+            }],
             ..Default::default()
         }
     }

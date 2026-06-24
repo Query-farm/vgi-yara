@@ -17,7 +17,10 @@ use std::sync::Arc;
 use arrow_array::builder::{BooleanBuilder, Int32Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::DataType;
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams, ScalarFunction};
+use vgi::{
+    ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams,
+    ScalarFunction,
+};
 use vgi_rpc::{Result, RpcError};
 use yara_x::Rules;
 
@@ -162,7 +165,7 @@ fn process_kind(kind: Kind, params: &ProcessParams, batch: &RecordBatch) -> Resu
 }
 
 macro_rules! impl_scalar {
-    ($struct:ident, $name:literal, $desc:literal) => {
+    ($struct:ident, $name:literal, $desc:literal, $ex_sql:literal, $ex_desc:literal) => {
         impl ScalarFunction for $struct {
             fn name(&self) -> &str {
                 $name
@@ -171,6 +174,11 @@ macro_rules! impl_scalar {
                 FunctionMetadata {
                     description: $desc.into(),
                     return_type: Some(return_type(Self::KIND)),
+                    examples: vec![FunctionExample {
+                        sql: $ex_sql.into(),
+                        description: $ex_desc.into(),
+                        expected_output: None,
+                    }],
                     ..Default::default()
                 }
             }
@@ -190,17 +198,26 @@ macro_rules! impl_scalar {
 impl_scalar!(
     YaraMatches,
     "yara_matches",
-    "True if the data matches ANY of the YARA rules (BLOB/VARCHAR data, VARCHAR rules)"
+    "True if the data matches ANY of the YARA rules (BLOB/VARCHAR data, VARCHAR rules)",
+    "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \
+     \"malware\" condition: $a }');",
+    "Test whether a blob/text matches any rule in a YARA ruleset."
 );
 impl_scalar!(
     YaraFirstRule,
     "yara_first_rule",
-    "Identifier of the first matching YARA rule, or NULL if none match"
+    "Identifier of the first matching YARA rule, or NULL if none match",
+    "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \
+     \"malware\" condition: $a }');",
+    "Return the identifier of the first YARA rule that matches the data."
 );
 impl_scalar!(
     YaraMatchCount,
     "yara_match_count",
-    "Number of YARA rules that match the data (INT)"
+    "Number of YARA rules that match the data (INT)",
+    "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: \
+     $a } rule b { strings: $b = \"worm\" condition: $b }');",
+    "Count how many YARA rules in a ruleset match the data."
 );
 
 #[cfg(test)]

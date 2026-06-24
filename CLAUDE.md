@@ -15,9 +15,9 @@ name `yara` (single `main` schema). Rule compilation + scanning via
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.5.0", yara-x = "=1.7.0"
+Cargo.toml                          workspace; pins vgi = "0.9.0", yara-x = "=1.7.0"
 crates/yara-worker/
-  src/main.rs                       Worker::new(); registers scalars + tables
+  src/main.rs                       Worker::new(); registers scalars + tables; set_catalog metadata
   src/scanning.rs                   PURE logic (no Arrow): compile/scan + size bound + unit tests
   src/arrow_io.rs                   BLOB/VARCHAR reads + LIST(VARCHAR) builder + in-process scalar test harness
   src/scalar/{matches,check,version,mod}.rs   thin Arrow scalar adapters

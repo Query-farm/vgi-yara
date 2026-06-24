@@ -11,7 +11,7 @@ use arrow_array::builder::{Int64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::scanning::{self, StringMatch};
@@ -37,6 +37,26 @@ impl TableFunction for YaraStringMatches {
             description:
                 "Scan data against YARA rules; one row per pattern hit (rule, identifier, offset, matched)"
                     .into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT * FROM yara.main.yara_string_matches('this file contains malware', \
+                      'rule demo { strings: $a = \"malware\" condition: $a }');"
+                    .into(),
+                description: "Scan a constant blob against a ruleset, one row per pattern hit \
+                              (which rule/string matched, at what offset, and the matched bytes)."
+                    .into(),
+                expected_output: None,
+            }],
+            tags: vec![(
+                "vgi.columns_md".into(),
+                "| column | type | description |\n\
+                 |---|---|---|\n\
+                 | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
+                 | `identifier` | VARCHAR | Pattern/string identifier that hit, e.g. `$a`. |\n\
+                 | `offset` | BIGINT | Byte offset of the match within the scanned data. |\n\
+                 | `matched` | VARCHAR | Matched bytes as UTF-8 when printable, else lowercase \
+                 hex (NULL if unavailable). |"
+                    .into(),
+            )],
             ..Default::default()
         }
     }

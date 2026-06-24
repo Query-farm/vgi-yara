@@ -13,7 +13,7 @@ use arrow_array::builder::StringBuilder;
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::arrow_io::{list_varchar_builder, list_varchar_type};
@@ -39,6 +39,25 @@ impl TableFunction for YaraScan {
             description:
                 "Scan data against YARA rules; one row per matching rule (rule, namespace, tags)"
                     .into(),
+            examples: vec![FunctionExample {
+                sql: "SELECT * FROM yara.main.yara_scan('this file contains malware', 'rule demo \
+                      { meta: severity = \"high\" strings: $a = \"malware\" condition: $a }');"
+                    .into(),
+                description: "Scan a constant blob against a ruleset, one row per matching rule \
+                              (rule, namespace, tags)."
+                    .into(),
+                expected_output: None,
+            }],
+            tags: vec![(
+                "vgi.columns_md".into(),
+                "| column | type | description |\n\
+                 |---|---|---|\n\
+                 | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
+                 | `namespace` | VARCHAR | Namespace the rule was compiled under (default \
+                 `default`). |\n\
+                 | `tags` | VARCHAR[] | Tags declared on the matching rule (empty list if none). |"
+                    .into(),
+            )],
             ..Default::default()
         }
     }
