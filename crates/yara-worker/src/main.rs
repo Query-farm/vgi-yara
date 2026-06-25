@@ -61,10 +61,11 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
             (
                 "vgi.keywords".to_string(),
-                "yara, yara-x, malware, malware scanning, threat hunting, IOC, indicator of \
-                 compromise, signature, rule, detection, security, antivirus, blob scan, \
-                 pattern matching, defensive security"
-                    .to_string(),
+                meta::keywords_json(
+                    "yara, yara-x, malware, malware scanning, threat hunting, IOC, indicator of \
+                     compromise, signature, rule, detection, security, antivirus, blob scan, \
+                     pattern matching, defensive security",
+                ),
             ),
             (
                 "vgi.doc_llm".to_string(),
@@ -116,20 +117,16 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ("vgi.title".to_string(), "YARA — main".to_string()),
                 (
                     "vgi.keywords".to_string(),
-                    "yara, malware, scan, yara_matches, yara_first_rule, yara_match_count, \
-                     yara_check, yara_scan, yara_string_matches, yara_version, rule compilation, \
-                     threat hunting, IOC, signature detection"
-                        .to_string(),
+                    meta::keywords_json(
+                        "yara, malware, scan, yara_matches, yara_first_rule, yara_match_count, \
+                         yara_check, yara_scan, yara_string_matches, yara_version, rule \
+                         compilation, threat hunting, IOC, signature detection",
+                    ),
                 ),
                 // VGI123 classifying tags (bare keys: domain/category/topic) for faceting.
                 ("domain".to_string(), "security".to_string()),
                 ("category".to_string(), "malware-scanning".to_string()),
                 ("topic".to_string(), "yara-rule-matching".to_string()),
-                (
-                    "vgi.source_url".to_string(),
-                    "https://github.com/Query-farm/vgi-yara/blob/main/crates/yara-worker/src/main.rs"
-                        .to_string(),
-                ),
                 (
                     "vgi.doc_llm".to_string(),
                     "YARA malware-scanning functions: scan a column of blobs/text against a YARA \
@@ -139,7 +136,14 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 ),
                 (
                     "vgi.doc_md".to_string(),
-                    "YARA rule compilation and malware-scanning functions over Apache Arrow."
+                    "YARA rule compilation and malware-scanning functions over Apache Arrow. \
+                     Scalars (`yara_matches`, `yara_first_rule`, `yara_match_count`, `yara_check`, \
+                     `yara_version`) test a column of blobs/text against a ruleset, validate that \
+                     a ruleset compiles, and report the worker version. Table functions \
+                     (`yara_scan`, `yara_string_matches`) fan a single constant blob into one row \
+                     per matching rule or per pattern hit. Scanning is total: untrusted or hostile \
+                     data yields no matches rather than crashing the worker; only an invalid rule \
+                     source raises an error."
                         .to_string(),
                 ),
                 // VGI506 representative example queries for the schema.

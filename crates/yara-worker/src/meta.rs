@@ -3,38 +3,60 @@
 //!
 //! Each function/table surfaces these in its `FunctionMetadata.tags`:
 //! - `vgi.title` (VGI124)        — human-friendly display name
-//! - `vgi.doc_llm` (VGI112) — narrative Markdown prose aimed at LLMs/agents
-//! - `vgi.doc_md` (VGI113)  — narrative Markdown description for human docs
-//! - `vgi.keywords` (VGI126)        — comma-separated search terms/synonyms
-//! - `vgi.source_url` (VGI128)      — link to the implementing source file
+//! - `vgi.doc_llm` (VGI112)      — narrative Markdown prose aimed at LLMs/agents
+//! - `vgi.doc_md` (VGI113)       — narrative Markdown description for human docs
+//! - `vgi.keywords` (VGI126/VGI138) — search terms/synonyms, as a JSON array of
+//!   strings (`["a","b"]`), NOT a comma-separated string
 //!
-//! `source_url(file)` builds the canonical GitHub blob URL for a source file so
-//! every object points at exactly where it is implemented.
+//! Per-object `vgi.source_url` is intentionally NOT emitted: source-link
+//! provenance lives once on the catalog object (VGI004); repeating it on every
+//! function/schema is flagged as redundant by VGI139.
 
-/// Base GitHub blob URL for source files in this repo (pinned to `main`).
-const SOURCE_BASE: &str = "https://github.com/Query-farm/vgi-yara/blob/main/crates/yara-worker/src";
-
-/// Build the implementation `vgi.source_url` for a file under `yara-worker/src`,
-/// e.g. `source_url("scalar/check.rs")`.
-pub fn source_url(relative_path: &str) -> String {
-    format!("{SOURCE_BASE}/{relative_path}")
+/// Encode a comma-separated keyword list as a JSON array of strings, e.g.
+/// `"a, b"` → `["a","b"]`. Each keyword is JSON-string-escaped so a stray quote
+/// or backslash can never produce invalid JSON. Required by VGI138, which wants
+/// `vgi.keywords` to be a JSON array rather than a bare comma-separated string.
+pub fn keywords_json(comma_separated: &str) -> String {
+    let mut out = String::from("[");
+    let mut first = true;
+    for kw in comma_separated.split(',') {
+        let kw = kw.trim();
+        if kw.is_empty() {
+            continue;
+        }
+        if !first {
+            out.push(',');
+        }
+        first = false;
+        out.push('"');
+        for ch in kw.chars() {
+            match ch {
+                '"' => out.push_str("\\\""),
+                '\\' => out.push_str("\\\\"),
+                _ => out.push(ch),
+            }
+        }
+        out.push('"');
+    }
+    out.push(']');
+    out
 }
 
-/// Build the five standard per-object discovery/description tags.
+/// Build the four standard per-object discovery/description tags.
 ///
-/// `relative_path` is the implementing file relative to `yara-worker/src`.
+/// `keywords` is given as a comma-separated string for ergonomics and is encoded
+/// to the JSON-array form VGI138 requires. No per-object `vgi.source_url` is
+/// emitted (see module docs / VGI139).
 pub fn object_tags(
     title: &str,
     description_llm: &str,
     description_md: &str,
     keywords: &str,
-    relative_path: &str,
 ) -> Vec<(String, String)> {
     vec![
         ("vgi.title".to_string(), title.to_string()),
         ("vgi.doc_llm".to_string(), description_llm.to_string()),
         ("vgi.doc_md".to_string(), description_md.to_string()),
-        ("vgi.keywords".to_string(), keywords.to_string()),
-        ("vgi.source_url".to_string(), source_url(relative_path)),
+        ("vgi.keywords".to_string(), keywords_json(keywords)),
     ]
 }

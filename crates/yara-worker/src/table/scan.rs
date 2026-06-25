@@ -81,7 +81,6 @@ impl TableFunction for YaraScan {
              `namespace`, `tags`.",
             "yara_scan, scan, matching rules, rule, namespace, tags, per-rule, table function, \
              malware triage, threat hunting",
-            "table/scan.rs",
         );
         tags.push((
             "vgi.result_columns_md".into(),
@@ -114,8 +113,20 @@ impl TableFunction for YaraScan {
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
         vec![
-            ArgSpec::const_arg("data", 0, "any", "Bytes/text to scan (BLOB or VARCHAR)"),
-            ArgSpec::const_arg("rules", 1, "any", "YARA rule source (VARCHAR)"),
+            // `data` accepts either a binary blob or text, so it stays type-generic.
+            ArgSpec::const_arg(
+                "data",
+                0,
+                "any",
+                "The constant content to scan for malware/IOC signatures",
+            ),
+            // `rules` is always textual YARA source, so it is typed concretely.
+            ArgSpec::const_arg(
+                "rules",
+                1,
+                "varchar",
+                "YARA rule source whose rules are compiled and matched against the data",
+            ),
         ]
     }
 

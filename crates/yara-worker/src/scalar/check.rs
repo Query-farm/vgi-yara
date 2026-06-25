@@ -46,17 +46,17 @@ impl ScalarFunction for YaraCheck {
                 "Return `true` if the YARA rule source compiles, else `false` (NULL → NULL).",
                 "yara_check, validate, compile, rule validation, lint rules, syntax check, \
                  ruleset valid, does it compile",
-                "scalar/check.rs",
             ),
             ..Default::default()
         }
     }
 
     fn argument_specs(&self) -> Vec<ArgSpec> {
-        vec![ArgSpec::any_column(
+        vec![ArgSpec::column(
             "rules",
             0,
-            "YARA rule source (VARCHAR)",
+            "varchar",
+            "YARA rule source to validate — the text whose rules are compiled",
         )]
     }
 

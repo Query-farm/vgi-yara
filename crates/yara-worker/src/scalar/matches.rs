@@ -73,8 +73,16 @@ scan_scalar!(YaraMatchCount, Kind::MatchCount);
 /// output column type and projection.
 fn argument_specs() -> Vec<ArgSpec> {
     vec![
-        ArgSpec::any_column("data", 0, "Bytes/text to scan (BLOB or VARCHAR)"),
-        ArgSpec::any_column("rules", 1, "YARA rule source (VARCHAR)"),
+        // `data` is genuinely type-generic — it accepts either a binary blob or a
+        // text column of bytes to scan — so it stays ANY.
+        ArgSpec::any_column("data", 0, "The content to scan for malware/IOC signatures"),
+        // `rules` is always textual YARA source, so it is typed concretely.
+        ArgSpec::column(
+            "rules",
+            1,
+            "varchar",
+            "YARA rule source whose rules are compiled and matched against the data",
+        ),
     ]
 }
 
@@ -180,7 +188,7 @@ macro_rules! impl_scalar {
                         description: $ex_desc.into(),
                         expected_output: None,
                     }],
-                    tags: crate::meta::object_tags($title, $llm, $md, $kw, "scalar/matches.rs"),
+                    tags: crate::meta::object_tags($title, $llm, $md, $kw),
                     ..Default::default()
                 }
             }
@@ -209,9 +217,10 @@ impl_scalar!(
      if none match. Either operand NULL → NULL. A column-friendly predicate for filtering rows \
      whose contents hit a ruleset. An invalid rule source raises a clear error; scanning the \
      untrusted data is total and never crashes the worker.",
+    "Return `true` if the data matches any rule in the YARA ruleset, else `false` (either argument \
+     NULL → NULL).",
     "yara_matches, match, predicate, scan, does it match, malware detection, filter, contains \
-     malware, boolean scan",
-    "scalar/matches.rs"
+     malware, boolean scan"
 );
 impl_scalar!(
     YaraFirstRule,
@@ -225,9 +234,10 @@ impl_scalar!(
      or NULL if no rule matches. Either operand NULL → NULL. Useful for labelling a row with the \
      signature that triggered. An invalid rule source raises a clear error; scanning untrusted \
      data is total.",
+    "Return the identifier of the first YARA rule that matches the data, or `NULL` if none match \
+     (either argument NULL → NULL).",
     "yara_first_rule, first match, rule name, label, which rule, signature name, matching rule \
-     identifier",
-    "scalar/matches.rs"
+     identifier"
 );
 impl_scalar!(
     YaraMatchCount,
@@ -241,8 +251,9 @@ impl_scalar!(
      as an INT (0 if none match). Either operand NULL → NULL. Useful for ranking rows by how many \
      signatures they trigger. An invalid rule source raises a clear error; scanning untrusted \
      data is total.",
-    "yara_match_count, count, number of matches, how many rules, match tally, severity ranking",
-    "scalar/matches.rs"
+    "Return the number of YARA rules in the ruleset that match the data, as an `INT` (0 if none; \
+     either argument NULL → NULL).",
+    "yara_match_count, count, number of matches, how many rules, match tally, severity ranking"
 );
 
 #[cfg(test)]

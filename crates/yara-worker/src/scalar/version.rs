@@ -32,7 +32,6 @@ impl ScalarFunction for YaraVersion {
                  diagnostics and confirming which build is attached. Takes no arguments.",
                 "Return the YARA worker version string, e.g. `yara_version()` → '0.1.0'.",
                 "version, build version, yara_version, diagnostics, worker version, semver",
-                "scalar/version.rs",
             ),
             ..Default::default()
         }
