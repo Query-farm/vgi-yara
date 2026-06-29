@@ -84,14 +84,36 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
             (
                 "vgi.doc_md".to_string(),
-                "# yara\n\nDefensive **YARA-X** malware scanning over Apache Arrow, powered by \
-                 VirusTotal's pure-Rust YARA rewrite (no native libyara).\n\n**Scalars:** \
-                 `yara_matches` (BOOLEAN), `yara_first_rule` (VARCHAR), `yara_match_count` \
-                 (INT), `yara_check` (BOOLEAN), `yara_version` (VARCHAR).\n\n**Tables:** \
-                 `yara_scan` (rule, namespace, tags[]), `yara_string_matches` (rule, identifier, \
-                 offset, matched).\n\nScanning is total: untrusted/garbage/empty/hostile data \
-                 yields no matches rather than crashing; only an invalid rule source raises an \
-                 error (except `yara_check`, which returns `false`)."
+                "# YARA Malware Scanning in SQL\n\n\
+                 Scan blobs, files, and text columns for malware and indicators of compromise \
+                 (IOCs) straight from DuckDB SQL by compiling and matching **YARA rules** — no \
+                 external scanner, no native `libyara`, just functions you can call in a query.\n\n\
+                 This extension brings defensive YARA rule matching to the database, so security \
+                 engineers, threat hunters, and data teams can triage suspicious files, hunt for \
+                 signatures, and enforce detection rules over data they already have in DuckDB. \
+                 Instead of exporting samples to a standalone tool, you write a YARA ruleset (or \
+                 load one from a column) and let SQL fan it across millions of rows: filter a \
+                 table of email attachments, label artifacts in an object store, or join scan \
+                 verdicts back onto your metadata — all in one place.\n\n\
+                 Matching is powered by [YARA-X](https://github.com/VirusTotal/yara-x), \
+                 VirusTotal's pure-Rust rewrite of the classic YARA engine, embedded directly in \
+                 the worker so there is no C dependency to install or keep patched. Rules are \
+                 compiled once per batch and reused, and scanning is *total*: untrusted, garbage, \
+                 empty, or deliberately hostile data simply yields no matches rather than crashing \
+                 the worker, so you can point it at live malware safely. The full YARA syntax — \
+                 string, hex, and regex patterns, conditions, namespaces, tags, and the standard \
+                 `pe`/`elf`/`hash`/`math` modules — is supported.\n\n\
+                 The per-row scalar functions test a column of blobs or text against a ruleset: \
+                 `yara_matches` returns a BOOLEAN match predicate, `yara_first_rule` returns the \
+                 name of the first matching rule, `yara_match_count` returns how many rules \
+                 matched, `yara_check` validates that a ruleset compiles (returning `false` rather \
+                 than erroring on a bad rule), and `yara_version` reports the embedded YARA-X \
+                 version. The table functions fan a single constant blob into its hits: \
+                 `yara_scan` yields one row per matching rule (rule, namespace, tags[]) and \
+                 `yara_string_matches` yields one row per pattern hit (rule, identifier, offset, \
+                 matched bytes). For rule-writing syntax and module reference see the official \
+                 [YARA-X documentation](https://virustotal.github.io/yara-x/) and the \
+                 [yara-x crate docs](https://docs.rs/yara-x)."
                     .to_string(),
             ),
             ("vgi.author".to_string(), "Query.Farm".to_string()),
