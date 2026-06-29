@@ -85,6 +85,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             (
                 "vgi.doc_md".to_string(),
                 "# YARA Malware Scanning in SQL\n\n\
+                 ![YARA-X logo](https://raw.githubusercontent.com/VirusTotal/yara-x/main/ls/editors/code/images/icon.png)\n\n\
                  Scan blobs, files, and text columns for malware and indicators of compromise \
                  (IOCs) straight from DuckDB SQL by compiling and matching **YARA rules** — no \
                  external scanner, no native `libyara`, just functions you can call in a query.\n\n\
