@@ -81,6 +81,7 @@ impl TableFunction for YaraScan {
              `namespace`, `tags`.",
             "yara_scan, scan, matching rules, rule, namespace, tags, per-rule, table function, \
              malware triage, threat hunting",
+            "Match Details",
         );
         tags.push((
             "vgi.result_columns_md".into(),

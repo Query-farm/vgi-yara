@@ -42,21 +42,25 @@ pub fn keywords_json(comma_separated: &str) -> String {
     out
 }
 
-/// Build the four standard per-object discovery/description tags.
+/// Build the standard per-object discovery/description tags.
 ///
 /// `keywords` is given as a comma-separated string for ergonomics and is encoded
-/// to the JSON-array form VGI138 requires. No per-object `vgi.source_url` is
-/// emitted (see module docs / VGI139).
+/// to the JSON-array form VGI138 requires. `category` names one of the schema's
+/// declared `vgi.categories` (VGI413), so the object slots into the worker's
+/// navigation/listing sections. No per-object `vgi.source_url` is emitted (see
+/// module docs / VGI139).
 pub fn object_tags(
     title: &str,
     description_llm: &str,
     description_md: &str,
     keywords: &str,
+    category: &str,
 ) -> Vec<(String, String)> {
     vec![
         ("vgi.title".to_string(), title.to_string()),
         ("vgi.doc_llm".to_string(), description_llm.to_string()),
         ("vgi.doc_md".to_string(), description_md.to_string()),
         ("vgi.keywords".to_string(), keywords_json(keywords)),
+        ("vgi.category".to_string(), category.to_string()),
     ]
 }

@@ -39,11 +39,13 @@ impl TableFunction for YaraStringMatches {
              pattern hit: which rule and string identifier matched, the byte offset of the hit, \
              and the matched bytes (rendered as UTF-8 when printable, else lowercase hex). Both \
              arguments are bind-time constants. An invalid rule source is a clear DuckDB error; \
-             no hits, or hostile/NULL data, yields zero rows.",
+             no hits, or hostile/NULL data, yields zero rows. Note: the `offset` output column is \
+             a DuckDB reserved keyword, so reference it double-quoted (`\"offset\"`) in SQL.",
             "Scan a constant blob against a ruleset; one row per pattern hit. Columns: `rule`, \
              `identifier`, `offset`, `matched`.",
             "yara_string_matches, pattern hit, string match, offset, matched bytes, identifier, \
              per-pattern, forensics, where matched, table function",
+            "Match Details",
         );
         tags.push((
             "vgi.result_columns_md".into(),
@@ -51,7 +53,8 @@ impl TableFunction for YaraStringMatches {
              |---|---|---|\n\
              | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
              | `identifier` | VARCHAR | Pattern/string identifier that hit, e.g. `$a`. |\n\
-             | `offset` | BIGINT | Byte offset of the match within the scanned data. |\n\
+             | `\"offset\"` | BIGINT | Byte offset of the match within the scanned data. \
+             `offset` is a DuckDB reserved keyword — double-quote it in SQL. |\n\
              | `matched` | VARCHAR | Matched bytes as UTF-8 when printable, else lowercase \
              hex (NULL if unavailable). |"
                 .into(),

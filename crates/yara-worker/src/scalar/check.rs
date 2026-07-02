@@ -46,6 +46,7 @@ impl ScalarFunction for YaraCheck {
                 "Return `true` if the YARA rule source compiles, else `false` (NULL → NULL).",
                 "yara_check, validate, compile, rule validation, lint rules, syntax check, \
                  ruleset valid, does it compile",
+                "Rule Validation",
             ),
             ..Default::default()
         }

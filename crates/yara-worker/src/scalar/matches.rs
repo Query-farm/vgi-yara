@@ -188,7 +188,7 @@ macro_rules! impl_scalar {
                         description: $ex_desc.into(),
                         expected_output: None,
                     }],
-                    tags: crate::meta::object_tags($title, $llm, $md, $kw),
+                    tags: crate::meta::object_tags($title, $llm, $md, $kw, "Scanning"),
                     ..Default::default()
                 }
             }
