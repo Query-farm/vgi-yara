@@ -34,10 +34,13 @@ mod scalar;
 mod scanning;
 mod table;
 
-use vgi::catalog::{CatSchema, CatalogModel};
+use std::sync::Arc;
+
+use vgi::catalog::{CatSchema, CatTable, CatalogModel};
 use vgi::Worker;
 
-/// Worker version string, surfaced by `yara_version()`.
+/// Worker build version, published as the catalog's `implementation_version`
+/// (VGI328) rather than as a parameterless scalar function.
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
@@ -93,10 +96,17 @@ const AGENT_TEST_TASKS: &str = r#"[
     "unordered": true
   },
   {
-    "name": "report_worker_version",
-    "prompt": "What version string does this YARA worker report for itself?",
-    "reference_sql": "SELECT yara.main.yara_version() AS version",
+    "name": "count_available_modules",
+    "prompt": "How many YARA-X modules are compiled into this worker and available for a rule to import? Return the total.",
+    "reference_sql": "SELECT count(*) AS module_count FROM yara.main.yara_modules",
     "ignore_column_names": true
+  },
+  {
+    "name": "check_module_available",
+    "prompt": "Is the `pe` module (for inspecting Windows PE executables) available to import in a rule on this worker? Answer by listing the module row for it.",
+    "reference_sql": "SELECT module FROM yara.main.yara_modules WHERE module = 'pe'",
+    "ignore_column_names": true,
+    "unordered": true
   }
 ]"#;
 
@@ -139,8 +149,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  hostile data yields no matches rather than crashing the worker, so it is safe to \
                  point at live malware. The one error path is an invalid rule source, which is a \
                  user mistake and surfaces as a clear error. Use it for malware triage, threat \
-                 hunting, and enforcing detection rules over data you already hold. List the schema \
-                 to discover the exact scalar and table functions available."
+                 hunting, and enforcing detection rules over data you already hold."
                     .to_string(),
             ),
             (
@@ -171,8 +180,9 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                  labelling artifacts in place. Table functions instead expand a single scan into \
                  detail rows, one per matching rule or per individual pattern hit (with byte \
                  offsets and the matched bytes), for forensics and drill-down. There is also a \
-                 validation helper for checking that a ruleset compiles before you scan with it. \
-                 Browse the `main` schema to see the exact functions and their signatures.\n\n\
+                 validation helper for checking that a ruleset compiles before you scan with it, \
+                 and a `yara_modules` reference table listing the YARA-X modules (`pe`, `elf`, \
+                 `hash`, `math`, …) a rule may import.\n\n\
                  For rule-writing syntax and module reference see the official \
                  [YARA-X documentation](https://virustotal.github.io/yara-x/) and the \
                  [yara-x crate docs](https://docs.rs/yara-x)."
@@ -181,6 +191,24 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             (
                 "vgi.agent_test_tasks".to_string(),
                 AGENT_TEST_TASKS.to_string(),
+            ),
+            // VGI509: guaranteed-runnable, catalog-qualified examples with pinned
+            // expected results, so agents (and the linter's --execute pass) have a
+            // verified worked example for every capability. Each `sql` is
+            // self-contained (inline rule sources), so it runs as written against a
+            // freshly-attached `yara` catalog.
+            (
+                "vgi.executable_examples".to_string(),
+                r#"[
+  {"description": "Validate that a YARA ruleset compiles before scanning with it.", "sql": "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }') AS compiles", "expected_result": [{"compiles": true}]},
+  {"description": "Predicate: does the text match any rule in a ruleset?", "sql": "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS hit", "expected_result": [{"hit": true}]},
+  {"description": "Name the first rule that matches the data.", "sql": "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS first_rule", "expected_result": [{"first_rule": "demo"}]},
+  {"description": "Count how many rules in a ruleset match the data.", "sql": "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }') AS n", "expected_result": [{"n": 2}]},
+  {"description": "Scan a constant blob into one row per matching rule, with its namespace.", "sql": "SELECT rule, namespace FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY rule", "expected_result": [{"rule": "demo", "namespace": "default"}]},
+  {"description": "Locate each pattern hit in the data with its byte offset.", "sql": "SELECT identifier, \"offset\", matched FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY \"offset\"", "expected_result": [{"identifier": "$a", "offset": 19, "matched": "malware"}]},
+  {"description": "List the YARA-X modules a rule may import on this worker.", "sql": "SELECT module, description FROM yara.main.yara_modules ORDER BY module"}
+]"#
+                .to_string(),
             ),
             ("vgi.author".to_string(), "Query.Farm".to_string()),
             (
@@ -198,6 +226,10 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             ),
         ],
         source_url: Some("https://github.com/Query-farm/vgi-yara".to_string()),
+        // Publish the worker build version as catalog metadata (VGI328): an agent
+        // reads it from `vgi_catalogs()` without spending a query, and it can never
+        // drift from the running binary — no diagnostic scalar function needed.
+        implementation_version: Some(version().to_string()),
         schemas: vec![CatSchema {
             name: "main".to_string(),
             comment: Some("YARA rule compilation and malware-scanning functions.".to_string()),
@@ -217,8 +249,8 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                      hit with byte offsets.\"},\
                      {\"name\":\"Rule Validation\",\"description\":\"Check that a YARA ruleset \
                      compiles before scanning with it.\"},\
-                     {\"name\":\"Diagnostics\",\"description\":\"Report the YARA worker's own \
-                     version string.\"}\
+                     {\"name\":\"Reference\",\"description\":\"Discover the YARA-X modules \
+                     compiled into this worker that a rule may import.\"}\
                      ]"
                         .to_string(),
                 ),
@@ -226,7 +258,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                     "vgi.keywords".to_string(),
                     meta::keywords_json(
                         "yara, malware, scan, yara_matches, yara_first_rule, yara_match_count, \
-                         yara_check, yara_scan, yara_string_matches, yara_version, rule \
+                         yara_check, yara_scan, yara_string_matches, yara_modules, rule \
                          compilation, threat hunting, IOC, signature detection",
                     ),
                 ),
@@ -254,31 +286,107 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                      offsets.\n\
                      - **Rule Validation** — check that a ruleset compiles before you scan with \
                      it.\n\
-                     - **Diagnostics** — report the YARA worker's own version string.\n\n\
+                     - **Reference** — the `yara_modules` table lists the YARA-X modules (`pe`, \
+                     `elf`, `hash`, `math`, …) compiled into this worker that a rule may \
+                     import.\n\n\
                      Scanning is *total*: untrusted or hostile data yields no matches rather than \
-                     crashing the worker; only an invalid rule source raises an error. List the \
-                     schema to see the exact functions and their signatures."
+                     crashing the worker; only an invalid rule source raises an error."
                         .to_string(),
                 ),
-                // VGI506 representative example queries for the schema.
+                // VGI506/VGI515 representative example queries for the schema, as a
+                // JSON list of described {description, sql} objects. Each query is
+                // catalog-qualified and projects explicit columns (no bare SELECT *)
+                // so it reads as a worked example, not a dump (VGI514).
                 (
                     "vgi.example_queries".to_string(),
-                    "SELECT yara.main.yara_version();\n\
-                     SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }');\n\
-                     SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
-                     SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
-                     SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }');\n\
-                     SELECT * FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');\n\
-                     SELECT * FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"
+                    r#"[
+  {"description": "Validate that a YARA ruleset compiles before scanning with it.", "sql": "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }') AS compiles"},
+  {"description": "Predicate: does the data match any rule in a ruleset?", "sql": "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS hit"},
+  {"description": "Name the first rule that matches the data.", "sql": "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS first_rule"},
+  {"description": "Count how many rules in a ruleset match the data.", "sql": "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }') AS n"},
+  {"description": "Scan a constant blob into one row per matching rule, with its namespace.", "sql": "SELECT rule, namespace FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY rule"},
+  {"description": "Locate each pattern hit in the data with its byte offset.", "sql": "SELECT identifier, \"offset\", matched FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY \"offset\""},
+  {"description": "List the YARA-X modules a rule may import on this worker.", "sql": "SELECT module, description FROM yara.main.yara_modules ORDER BY module"}
+]"#
                         .to_string(),
                 ),
             ],
             views: Vec::new(),
             macros: Vec::new(),
-            tables: Vec::new(),
+            // Expose the parameterless `yara_modules` table function as a catalog
+            // TABLE so `SELECT * FROM yara.main.yara_modules` works (VGI146/VGI311).
+            // `with_function` stores the backing function and `Worker::set_catalog`
+            // auto-registers its scan function, so no separate `register_table`
+            // call is needed for it.
+            tables: vec![yara_modules_table()],
         }],
         ..Default::default()
     }
+}
+
+/// The catalog TABLE wrapping the parameterless `yara_modules` table function so
+/// `SELECT * FROM yara.main.yara_modules` gives an agent a browsable entry point
+/// (VGI146/VGI311). It carries the full per-object metadata the strict linter
+/// expects (title/doc_llm/doc_md/keywords/classifying tag/example queries),
+/// documented columns, and a single-column primary key (`module`), since each
+/// module name appears once.
+fn yara_modules_table() -> CatTable {
+    use crate::table::modules;
+    let mut t = CatTable::with_function(
+        "yara_modules",
+        modules::output_schema(),
+        Arc::new(modules::YaraModules),
+        Some(
+            "YARA-X modules compiled into this worker that a rule may import, one per row."
+                .to_string(),
+        ),
+        Some(modules::module_count() as i64),
+    );
+    t.tags = vec![
+        ("vgi.title".to_string(), "Supported YARA Modules".to_string()),
+        (
+            "vgi.doc_llm".to_string(),
+            "The YARA-X modules compiled into this worker, one row per module. Query it to \
+             discover which modules a rule can `import` (e.g. `pe`, `elf`, `hash`, `math`, \
+             `string`, `time`, `console`) before writing a rule that relies on one — a rule that \
+             imports a module not listed here will not compile."
+                .to_string(),
+        ),
+        (
+            "vgi.doc_md".to_string(),
+            "# yara_modules\n\nThe YARA-X **modules** built into this worker, one per row: the \
+             `module` name a rule may `import` (e.g. `pe`, `elf`, `hash`, `math`, `string`, \
+             `time`, `console`) and a `description` of what it inspects. A rule that imports a \
+             module not listed here will fail to compile."
+                .to_string(),
+        ),
+        (
+            "vgi.keywords".to_string(),
+            meta::keywords_json(
+                "yara modules, import, available modules, pe, elf, hash, math, string, time, \
+                 console, module reference, yara_modules, discovery, which modules",
+            ),
+        ),
+        // VGI413: place this table in one of the schema's declared categories.
+        ("vgi.category".to_string(), "Reference".to_string()),
+        // VGI123 classifying tag so the table is findable by facet.
+        ("domain".to_string(), "security".to_string()),
+        (
+            "vgi.example_queries".to_string(),
+            r#"[
+  {"description": "List every YARA-X module a rule may import on this worker, alphabetically.", "sql": "SELECT module, description FROM yara.main.yara_modules ORDER BY module"},
+  {"description": "Check whether the PE module is available before writing a rule that imports it.", "sql": "SELECT count(*) AS pe_available FROM yara.main.yara_modules WHERE module = 'pe'"}
+]"#
+            .to_string(),
+        ),
+    ];
+    // `module` (column 0) uniquely identifies a row (each module name appears
+    // once). `primary_key` is a list of key column-index groups.
+    t.primary_key = vec![vec![0]];
+    // A primary key column is implicitly NOT NULL; declare it so DuckDB and the
+    // linter agree the key column is non-nullable.
+    t.not_null = vec![0];
+    t
 }
 
 fn main() {

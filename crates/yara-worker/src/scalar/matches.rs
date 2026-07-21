@@ -174,12 +174,18 @@ fn process_kind(kind: Kind, params: &ProcessParams, batch: &RecordBatch) -> Resu
 
 macro_rules! impl_scalar {
     ($struct:ident, $name:literal, $desc:literal, $ex_sql:literal, $ex_desc:literal,
-     $title:literal, $llm:literal, $md:literal, $kw:literal) => {
+     $title:literal, $llm:literal, $md:literal, $kw:literal, $ex_queries:literal) => {
         impl ScalarFunction for $struct {
             fn name(&self) -> &str {
                 $name
             }
             fn metadata(&self) -> FunctionMetadata {
+                let mut tags = crate::meta::object_tags($title, $llm, $md, $kw, "Scanning");
+                // VGI515: carry the described example query in a tag as well as
+                // the native `examples` column. The tag `sql` matches `$ex_sql`
+                // (whitespace-insensitively) so the linter's merge keeps the
+                // described entry — the native example alone has no description.
+                tags.push(("vgi.example_queries".to_string(), $ex_queries.to_string()));
                 FunctionMetadata {
                     description: $desc.into(),
                     return_type: Some(return_type(Self::KIND)),
@@ -188,7 +194,7 @@ macro_rules! impl_scalar {
                         description: $ex_desc.into(),
                         expected_output: None,
                     }],
-                    tags: crate::meta::object_tags($title, $llm, $md, $kw, "Scanning"),
+                    tags,
                     ..Default::default()
                 }
             }
@@ -213,14 +219,15 @@ impl_scalar!(
      \"malware\" condition: $a }');",
     "Test whether a blob/text matches any rule in a YARA ruleset.",
     "YARA Matches Any Rule",
-    "Return true if the data (BLOB or VARCHAR bytes) matches ANY rule in the YARA ruleset, false \
+    "Return true if the data (`BLOB` or `VARCHAR` bytes) matches ANY rule in the YARA ruleset, false \
      if none match. Either operand NULL → NULL. A column-friendly predicate for filtering rows \
      whose contents hit a ruleset. An invalid rule source raises a clear error; scanning the \
      untrusted data is total and never crashes the worker.",
     "Return `true` if the data matches any rule in the YARA ruleset, else `false` (either argument \
      NULL → NULL).",
     "yara_matches, match, predicate, scan, does it match, malware detection, filter, contains \
-     malware, boolean scan"
+     malware, boolean scan",
+    r#"[{"description": "Test whether a blob/text matches any rule in a YARA ruleset.", "sql": "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"}]"#
 );
 impl_scalar!(
     YaraFirstRule,
@@ -230,14 +237,15 @@ impl_scalar!(
      \"malware\" condition: $a }');",
     "Return the identifier of the first YARA rule that matches the data.",
     "YARA First Matching Rule",
-    "Return the identifier of the first YARA rule that matches the data (BLOB or VARCHAR bytes), \
+    "Return the identifier of the first YARA rule that matches the data (`BLOB` or `VARCHAR` bytes), \
      or NULL if no rule matches. Either operand NULL → NULL. Useful for labelling a row with the \
      signature that triggered. An invalid rule source raises a clear error; scanning untrusted \
      data is total.",
     "Return the identifier of the first YARA rule that matches the data, or `NULL` if none match \
      (either argument NULL → NULL).",
     "yara_first_rule, first match, rule name, label, which rule, signature name, matching rule \
-     identifier"
+     identifier",
+    r#"[{"description": "Return the identifier of the first YARA rule that matches the data.", "sql": "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"}]"#
 );
 impl_scalar!(
     YaraMatchCount,
@@ -247,13 +255,14 @@ impl_scalar!(
      $a } rule b { strings: $b = \"worm\" condition: $b }');",
     "Count how many YARA rules in a ruleset match the data.",
     "YARA Matching Rule Count",
-    "Return the number of YARA rules in the ruleset that match the data (BLOB or VARCHAR bytes), \
+    "Return the number of YARA rules in the ruleset that match the data (`BLOB` or `VARCHAR` bytes), \
      as an INT (0 if none match). Either operand NULL → NULL. Useful for ranking rows by how many \
      signatures they trigger. An invalid rule source raises a clear error; scanning untrusted \
      data is total.",
     "Return the number of YARA rules in the ruleset that match the data, as an `INT` (0 if none; \
      either argument NULL → NULL).",
-    "yara_match_count, count, number of matches, how many rules, match tally, severity ranking"
+    "yara_match_count, count, number of matches, how many rules, match tally, severity ranking",
+    r#"[{"description": "Count how many YARA rules in a ruleset match the data.", "sql": "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }');"}]"#
 );
 
 #[cfg(test)]

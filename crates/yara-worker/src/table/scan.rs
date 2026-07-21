@@ -13,46 +13,11 @@ use arrow_array::builder::StringBuilder;
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::arrow_io::{list_varchar_builder, list_varchar_type};
 use crate::scanning::{self, RuleMatch};
-
-/// Guaranteed-runnable, catalog-qualified examples (VGI509). Each `sql` is
-/// self-contained and re-runnable against an attached `yara` worker. We omit
-/// `expected_result` deliberately — the linter only needs each query to execute
-/// cleanly, and pinning exact output would be brittle.
-const EXECUTABLE_EXAMPLES: &str = r#"[
-  {
-    "description": "Report the YARA worker version.",
-    "sql": "SELECT yara.main.yara_version() AS version"
-  },
-  {
-    "description": "Validate that a YARA ruleset compiles before scanning with it.",
-    "sql": "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }') AS ok"
-  },
-  {
-    "description": "Test whether a blob matches any rule in a ruleset.",
-    "sql": "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS hit"
-  },
-  {
-    "description": "Name the first rule that matches the data.",
-    "sql": "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS rule"
-  },
-  {
-    "description": "Count how many rules match the data.",
-    "sql": "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }') AS n"
-  },
-  {
-    "description": "Scan a constant blob, one row per matching rule.",
-    "sql": "SELECT rule, namespace FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }')"
-  },
-  {
-    "description": "Scan a constant blob, one row per pattern hit with offsets.",
-    "sql": "SELECT rule, identifier, \"offset\", matched FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }')"
-  }
-]"#;
 
 pub struct YaraScan;
 
@@ -74,7 +39,7 @@ impl TableFunction for YaraScan {
             "Scan Data Into Matching Rules",
             "Scan a constant blob/text against a YARA ruleset and return one row per matching \
              rule, projecting the rule identifier, the namespace it was compiled under, and the \
-             rule's tags as a VARCHAR[]. Both arguments are bind-time constants. An invalid rule \
+             rule's tags as a `VARCHAR[]`. Both arguments are bind-time constants. An invalid rule \
              source is a clear DuckDB error; a ruleset that matches nothing, or hostile/garbage/\
              NULL data, yields zero rows.",
             "Scan a constant blob against a ruleset; one row per matching rule. Columns: `rule`, \
@@ -83,30 +48,28 @@ impl TableFunction for YaraScan {
              malware triage, threat hunting",
             "Match Details",
         );
+        // VGI307/VGI414: declare the static result schema as a structured JSON
+        // array of {name, type, description} (the retired free-form
+        // `vgi.result_columns_md` is no longer read).
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
-             | `namespace` | VARCHAR | Namespace the rule was compiled under (default \
-             `default`). |\n\
-             | `tags` | VARCHAR[] | Tags declared on the matching rule (empty list if none). |"
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "rule", "type": "VARCHAR", "description": "Identifier of the matching YARA rule."},
+  {"name": "namespace", "type": "VARCHAR", "description": "Namespace the rule was compiled under (default 'default')."},
+  {"name": "tags", "type": "VARCHAR[]", "description": "Tags declared on the matching rule (empty list if none)."}
+]"#
+            .into(),
+        ));
+        // VGI514/VGI515: a projected, described example (not a bare SELECT *).
+        tags.push((
+            "vgi.example_queries".into(),
+            r#"[{"description": "Scan a constant blob against a ruleset, one row per matching rule with its namespace.", "sql": "SELECT rule, namespace FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY rule"}]"#
                 .into(),
         ));
-        tags.push(("vgi.executable_examples".into(), EXECUTABLE_EXAMPLES.into()));
         FunctionMetadata {
             description:
                 "Scan data against YARA rules; one row per matching rule (rule, namespace, tags)"
                     .into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT * FROM yara.main.yara_scan('this file contains malware', 'rule demo \
-                      { meta: severity = \"high\" strings: $a = \"malware\" condition: $a }');"
-                    .into(),
-                description: "Scan a constant blob against a ruleset, one row per matching rule \
-                              (rule, namespace, tags)."
-                    .into(),
-                expected_output: None,
-            }],
             tags,
             ..Default::default()
         }

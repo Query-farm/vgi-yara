@@ -25,6 +25,24 @@ impl ScalarFunction for YaraCheck {
     }
 
     fn metadata(&self) -> FunctionMetadata {
+        let mut tags = crate::meta::object_tags(
+            "Validate YARA Ruleset Compiles",
+            "Return true if the given YARA rule source compiles into a valid ruleset, false \
+             otherwise. This is the dedicated \"does it compile?\" predicate: unlike the scan \
+             scalars, a non-compiling source returns false rather than raising an error. NULL \
+             input yields NULL. Use it to validate user-supplied rules before scanning.",
+            "Return `true` if the YARA rule source compiles, else `false` (NULL → NULL).",
+            "yara_check, validate, compile, rule validation, lint rules, syntax check, \
+             ruleset valid, does it compile",
+            "Rule Validation",
+        );
+        // VGI515: carry the described example query in a tag as well as the native
+        // `examples` column so every example the linter sees has a description.
+        tags.push((
+            "vgi.example_queries".to_string(),
+            r#"[{"description": "Validate that a YARA ruleset compiles before using it to scan.", "sql": "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }');"}]"#
+                .to_string(),
+        ));
         FunctionMetadata {
             description: "True if the YARA rule source compiles, false otherwise (validation)"
                 .into(),
@@ -37,17 +55,7 @@ impl ScalarFunction for YaraCheck {
                     .into(),
                 expected_output: None,
             }],
-            tags: crate::meta::object_tags(
-                "Validate YARA Ruleset Compiles",
-                "Return true if the given YARA rule source compiles into a valid ruleset, false \
-                 otherwise. This is the dedicated \"does it compile?\" predicate: unlike the scan \
-                 scalars, a non-compiling source returns false rather than raising an error. NULL \
-                 input yields NULL. Use it to validate user-supplied rules before scanning.",
-                "Return `true` if the YARA rule source compiles, else `false` (NULL → NULL).",
-                "yara_check, validate, compile, rule validation, lint rules, syntax check, \
-                 ruleset valid, does it compile",
-                "Rule Validation",
-            ),
+            tags,
             ..Default::default()
         }
     }

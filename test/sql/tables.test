@@ -90,6 +90,25 @@ statement error
 SELECT * FROM yara_scan('x', 'rule broken { condition: }');
 ----
 
+# yara_modules: the browsable reference table lists every compiled-in YARA-X
+# module (parameterless — SELECT * works without arguments).
+query I
+SELECT count(*) FROM yara_modules;
+----
+7
+
+# A specific module (pe) is available for a rule to import.
+query T
+SELECT module FROM yara_modules WHERE module = 'pe';
+----
+pe
+
+# Modules come back ordered and each carries a non-empty description.
+query I
+SELECT count(*) FROM yara_modules WHERE description IS NULL OR description = '';
+----
+0
+
 statement ok
 USE memory;
 

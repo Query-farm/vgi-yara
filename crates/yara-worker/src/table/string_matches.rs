@@ -11,7 +11,7 @@ use arrow_array::builder::{Int64Builder, StringBuilder};
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use vgi::table_function::{TableFunction, TableProducer};
-use vgi::{ArgSpec, BindParams, BindResponse, FunctionExample, FunctionMetadata, ProcessParams};
+use vgi::{ArgSpec, BindParams, BindResponse, FunctionMetadata, ProcessParams};
 use vgi_rpc::{OutputCollector, Result, RpcError};
 
 use crate::scanning::{self, StringMatch};
@@ -47,31 +47,30 @@ impl TableFunction for YaraStringMatches {
              per-pattern, forensics, where matched, table function",
             "Match Details",
         );
+        // VGI307/VGI414: declare the static result schema as a structured JSON
+        // array of {name, type, description} (the retired free-form
+        // `vgi.result_columns_md` is no longer read).
         tags.push((
-            "vgi.result_columns_md".into(),
-            "| column | type | description |\n\
-             |---|---|---|\n\
-             | `rule` | VARCHAR | Identifier of the matching YARA rule. |\n\
-             | `identifier` | VARCHAR | Pattern/string identifier that hit, e.g. `$a`. |\n\
-             | `\"offset\"` | BIGINT | Byte offset of the match within the scanned data. \
-             `offset` is a DuckDB reserved keyword — double-quote it in SQL. |\n\
-             | `matched` | VARCHAR | Matched bytes as UTF-8 when printable, else lowercase \
-             hex (NULL if unavailable). |"
+            "vgi.result_columns_schema".into(),
+            r#"[
+  {"name": "rule", "type": "VARCHAR", "description": "Identifier of the matching YARA rule."},
+  {"name": "identifier", "type": "VARCHAR", "description": "Pattern/string identifier that hit, e.g. $a."},
+  {"name": "offset", "type": "BIGINT", "description": "Byte offset of the match within the scanned data. 'offset' is a DuckDB reserved keyword — double-quote it in SQL."},
+  {"name": "matched", "type": "VARCHAR", "description": "Matched bytes as UTF-8 when printable, else lowercase hex (NULL if unavailable)."}
+]"#
+            .into(),
+        ));
+        // VGI514/VGI515: a projected, described example (not a bare SELECT *).
+        // `offset` is a DuckDB reserved keyword, so it is double-quoted.
+        tags.push((
+            "vgi.example_queries".into(),
+            r#"[{"description": "Scan a constant blob, one row per pattern hit, with the byte offset of each match.", "sql": "SELECT rule, identifier, \"offset\", matched FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY \"offset\""}]"#
                 .into(),
         ));
         FunctionMetadata {
             description:
                 "Scan data against YARA rules; one row per pattern hit (rule, identifier, offset, matched)"
                     .into(),
-            examples: vec![FunctionExample {
-                sql: "SELECT * FROM yara.main.yara_string_matches('this file contains malware', \
-                      'rule demo { strings: $a = \"malware\" condition: $a }');"
-                    .into(),
-                description: "Scan a constant blob against a ruleset, one row per pattern hit \
-                              (which rule/string matched, at what offset, and the matched bytes)."
-                    .into(),
-                expected_output: None,
-            }],
             tags,
             ..Default::default()
         }

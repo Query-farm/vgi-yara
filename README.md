@@ -53,10 +53,12 @@ SELECT * FROM yara_string_matches(read_blob('sample.bin'), $rules);
 | `yara_first_rule(data, rules)` | `VARCHAR` | Identifier of the first matching rule (`NULL` if none). |
 | `yara_match_count(data, rules)` | `INT` | Number of matching rules. |
 | `yara_check(rules)` | `BOOLEAN` | Do the rules compile? (validation; never errors). |
-| `yara_version()` | `VARCHAR` | Worker version string. |
 
 `data` is a `BLOB` or `VARCHAR` (the bytes/text to scan); `rules` is a YARA rule
 source string.
+
+> The worker build version is published as the catalog's `implementation_version`
+> (read it from `vgi_catalogs()`), not as a scalar function.
 
 ### Table
 
@@ -64,6 +66,7 @@ source string.
 | --- | --- | --- |
 | `yara_scan(data, rules)` | `rule VARCHAR, namespace VARCHAR, tags VARCHAR[]` | One row per matching rule. |
 | `yara_string_matches(data, rules)` | `rule VARCHAR, identifier VARCHAR, "offset" BIGINT, matched VARCHAR` | One row per pattern (string) hit. |
+| `yara_modules` | `module VARCHAR, description VARCHAR` | The YARA-X modules compiled into this worker that a rule may `import` (browsable — `SELECT * FROM yara.main.yara_modules`). |
 
 > DuckDB table functions take **constant** arguments (no subqueries), so the
 > `data` and `rules` passed to `yara_scan` / `yara_string_matches` must be
