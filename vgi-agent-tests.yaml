@@ -1,0 +1,36 @@
+# Private graders for the agent-suitability suite (`vgi-lint simulate`).
+#
+# The prompts are published in the catalog's vgi.agent_test_tasks tag
+# (crates/yara-worker/src/main.rs); the answers live here, keyed by task
+# name, so the agent being graded never sees them. vgi-lint discovers this
+# file in the directory it runs from. Every task passes its rule source and
+# data inline, so the suite needs no external fixtures.
+
+tasks:
+  - name: validate_ruleset_compiles
+    reference_sql: "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }') AS compiles"
+    ignore_column_names: true
+  - name: does_text_match_ruleset
+    reference_sql: "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS matched"
+    ignore_column_names: true
+  - name: count_matching_rules
+    reference_sql: "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }') AS n"
+    ignore_column_names: true
+  - name: name_first_matching_rule
+    reference_sql: "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS first_rule"
+    ignore_column_names: true
+  - name: list_matching_rules
+    reference_sql: "SELECT rule FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY rule"
+    unordered: true
+    ignore_column_names: true
+  - name: locate_pattern_hits
+    reference_sql: "SELECT identifier, \"offset\" FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY \"offset\""
+    unordered: true
+    ignore_column_names: true
+  - name: count_available_modules
+    reference_sql: "SELECT count(*) AS module_count FROM yara.main.yara_modules"
+    ignore_column_names: true
+  - name: check_module_available
+    reference_sql: "SELECT module FROM yara.main.yara_modules WHERE module = 'pe'"
+    unordered: true
+    ignore_column_names: true

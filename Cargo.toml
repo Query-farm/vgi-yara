@@ -5,31 +5,29 @@ members = ["crates/yara-worker"]
 [workspace.package]
 version = "0.1.1"
 edition = "2021"
-rust-version = "1.90"
+rust-version = "1.97"
 license = "MIT"
 authors = ["Query Farm LLC <hello@query.farm>"]
 repository = "https://github.com/Query-farm/vgi-yara"
 
 [workspace.dependencies]
-# VGI Rust SDK (worker side), published on crates.io. Pulls in vgi-rpc 0.5 and
-# arrow 59 transitively; keep arrow/vgi-rpc here in lockstep with vgi's pins so a
+# VGI Rust SDK (worker side), published on crates.io. Pulls in vgi-rpc 0.32 and
+# arrow 60 transitively; vgi 0.46 requires rustc 1.97 (workspace rust-version); keep arrow/vgi-rpc here in lockstep with vgi's pins so a
 # single arrow/vgi-rpc resolves.
-vgi = "0"
-vgi-rpc = { version = "0", default-features = false, features = ["macros", "stream-codec"] }
-arrow-array = "59"
-arrow-buffer = "59"
-arrow-schema = "59"
+vgi = "0.46"
+vgi-rpc = { version = "0.32", default-features = false, features = ["macros", "stream-codec"] }
+arrow-array = "60"
+arrow-buffer = "60"
+arrow-schema = "60"
 
 # YARA-X — VirusTotal's official pure-Rust YARA rewrite (compiles rules + scans,
-# NO native libyara/C dependency). Pinned to =1.7.0 because that is the newest
-# release whose declared rust-version (1.86) — and whose actual transitive deps —
-# resolve under our workspace `rust-version = 1.86`; yara-x 1.8+ bumps MSRV to
-# 1.87+. License: BSD-3-Clause (the crate) over Apache/BSD/MIT deps.
+# NO native libyara/C dependency). Exact-pinned so a yara-x minor (which can
+# raise its MSRV — 1.22 declares 1.95) is an explicit bump. License: BSD-3-Clause (the crate) over Apache/BSD/MIT deps.
 #
 # default-features are off (they drag in the heavy `vt`/`dotnet`/`macho`/`lnk`/
 # `cuckoo`/`dex`/`crx` modules and proto codegen we don't need); we enable just
 # the standard malware-rule modules so common rules (hash/pe/elf/math/…) compile.
-yara-x = { version = "=1.7.0", default-features = false, features = [
+yara-x = { version = "=1.22.0", default-features = false, features = [
     "constant-folding",
     "fast-regexp",
     "exact-atoms",

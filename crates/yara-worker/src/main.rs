@@ -46,67 +46,50 @@ pub fn version() -> &'static str {
 }
 
 /// Analyst tasks (VGI152) that `vgi-lint simulate` uses to measure how well an
-/// agent can actually drive this worker. Each task is a natural-language prompt
-/// paired with a canonical `reference_sql` answer built only from this worker's
-/// published functions. Kept self-contained (inline rule sources, no external
+/// agent can actually drive this worker. Each task is a natural-language prompt;
+/// its canonical `reference_sql` answer (built only from this worker's published
+/// functions) and grading options live in the private `vgi-agent-tests.yaml`
+/// sidecar at the repo root, keyed by task name, so the graded agent never sees
+/// them (VGI416). Kept self-contained (inline rule sources, no external
 /// tables) so every task is runnable against a freshly-attached `yara` catalog.
 ///
 /// Grading (`_resultsets_equal`) is strict on column NAMES, VALUES and ROW ORDER
 /// by default. An analyst reproducing the answer has no way to guess our arbitrary
-/// output aliases, so every task sets `"ignore_column_names": true` (compare
+/// output aliases, so every sidecar task sets `ignore_column_names: true` (compare
 /// values, not the alias the agent happens to pick). Multi-row tasks also set
-/// `"unordered": true` so a differently-ordered but equal result still passes.
+/// `unordered: true` so a differently-ordered but equal result still passes.
 const AGENT_TEST_TASKS: &str = r#"[
   {
     "name": "validate_ruleset_compiles",
-    "prompt": "I have this YARA rule source: rule demo { strings: $a = \"malware\" condition: $a }. Before I scan anything with it, tell me whether it compiles into a valid ruleset.",
-    "reference_sql": "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }') AS compiles",
-    "ignore_column_names": true
+    "prompt": "I have this YARA rule source: rule demo { strings: $a = \"malware\" condition: $a }. Before I scan anything with it, tell me whether it compiles into a valid ruleset."
   },
   {
     "name": "does_text_match_ruleset",
-    "prompt": "Does the text 'this file contains malware' match the YARA rule rule demo { strings: $a = \"malware\" condition: $a }? I just need a yes/no.",
-    "reference_sql": "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS matched",
-    "ignore_column_names": true
+    "prompt": "Does the text 'this file contains malware' match the YARA rule rule demo { strings: $a = \"malware\" condition: $a }? I just need a yes/no."
   },
   {
     "name": "count_matching_rules",
-    "prompt": "Given the two YARA rules rule a { strings: $a = \"evil\" condition: $a } and rule b { strings: $b = \"worm\" condition: $b }, how many of them match the text 'evil worm'?",
-    "reference_sql": "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }') AS n",
-    "ignore_column_names": true
+    "prompt": "Given the two YARA rules rule a { strings: $a = \"evil\" condition: $a } and rule b { strings: $b = \"worm\" condition: $b }, how many of them match the text 'evil worm'?"
   },
   {
     "name": "name_first_matching_rule",
-    "prompt": "For the ruleset rule demo { strings: $a = \"malware\" condition: $a }, what is the name of the first rule that matches the text 'this file contains malware'?",
-    "reference_sql": "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') AS first_rule",
-    "ignore_column_names": true
+    "prompt": "For the ruleset rule demo { strings: $a = \"malware\" condition: $a }, what is the name of the first rule that matches the text 'this file contains malware'?"
   },
   {
     "name": "list_matching_rules",
-    "prompt": "Scan the text 'this file contains malware' with the ruleset rule demo { strings: $a = \"malware\" condition: $a } and list the identifier of every rule that matched.",
-    "reference_sql": "SELECT rule FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY rule",
-    "ignore_column_names": true,
-    "unordered": true
+    "prompt": "Scan the text 'this file contains malware' with the ruleset rule demo { strings: $a = \"malware\" condition: $a } and list the identifier of every rule that matched."
   },
   {
     "name": "locate_pattern_hits",
-    "prompt": "Using the ruleset rule demo { strings: $a = \"malware\" condition: $a }, find where the single pattern hits in the text 'this file contains malware': return the pattern identifier and the byte offset of the match. Remember that `offset` is a reserved keyword and must be double-quoted.",
-    "reference_sql": "SELECT identifier, \"offset\" FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }') ORDER BY \"offset\"",
-    "ignore_column_names": true,
-    "unordered": true
+    "prompt": "Using the ruleset rule demo { strings: $a = \"malware\" condition: $a }, find where the single pattern hits in the text 'this file contains malware': return the pattern identifier and the byte offset of the match. Remember that `offset` is a reserved keyword and must be double-quoted."
   },
   {
     "name": "count_available_modules",
-    "prompt": "How many YARA-X modules are compiled into this worker and available for a rule to import? Return the total.",
-    "reference_sql": "SELECT count(*) AS module_count FROM yara.main.yara_modules",
-    "ignore_column_names": true
+    "prompt": "How many YARA-X modules are compiled into this worker and available for a rule to import? Return the total."
   },
   {
     "name": "check_module_available",
-    "prompt": "Is the `pe` module (for inspecting Windows PE executables) available to import in a rule on this worker? Answer by listing the module row for it.",
-    "reference_sql": "SELECT module FROM yara.main.yara_modules WHERE module = 'pe'",
-    "ignore_column_names": true,
-    "unordered": true
+    "prompt": "Is the `pe` module (for inspecting Windows PE executables) available to import in a rule on this worker? Answer by listing the module row for it."
   }
 ]"#;
 
@@ -232,6 +215,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
         implementation_version: Some(version().to_string()),
         schemas: vec![CatSchema {
             name: "main".to_string(),
+            path: Vec::new(),
             comment: Some("YARA rule compilation and malware-scanning functions.".to_string()),
             tags: vec![
                 ("vgi.title".to_string(), "YARA — main".to_string()),

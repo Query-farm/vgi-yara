@@ -15,7 +15,7 @@ name `yara` (single `main` schema). Rule compilation + scanning via
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.9.0", yara-x = "=1.7.0"
+Cargo.toml                          workspace; pins vgi = "0.46" (arrow 60), yara-x = "=1.22.0"
 crates/yara-worker/
   src/main.rs                       Worker::new(); registers scalars + tables; set_catalog metadata
   src/scanning.rs                   PURE logic (no Arrow): compile/scan + size bound + unit tests
@@ -32,10 +32,10 @@ marshalling in `arrow_io.rs` + `scalar/*.rs` + `table/*.rs` (thin, harness-teste
 
 ## Library: yara-x (compile + scan)
 
-Pinned to **`=1.7.0`**. yara-x 1.7.0 declares `rust-version = 1.86` and its
-actual transitive deps resolve under our workspace `rust-version = 1.86`; yara-x
-**1.8+ bumps MSRV to 1.87+** (and latest 1.18 to 1.91 via wasmtime/cranelift), so
-do not bump without raising the workspace MSRV. `default-features` are OFF (they
+Pinned to **`=1.22.0`**, which declares `rust-version = 1.95`, under the
+workspace `rust-version = 1.97` (set by the vgi 0.46 SDK). yara-x minors raise
+their MSRV regularly (wasmtime/cranelift), so keep the exact pin and check the
+MSRV when bumping. `default-features` are OFF (they
 drag in the heavy `vt`/`dotnet`/`macho`/`lnk`/`cuckoo`/`dex`/`crx` modules and
 proto codegen); we enable just the standard malware-rule modules
 (`hash`/`pe`/`elf`/`math`/`string`/`time`/`console`) plus
