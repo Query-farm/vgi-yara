@@ -37,6 +37,7 @@ mod table;
 use std::sync::Arc;
 
 use vgi::catalog::{CatSchema, CatTable, CatalogModel};
+use vgi::constraints::{constraint_record, ConstraintKind, ConstraintRecord};
 use vgi::Worker;
 
 /// Worker build version, published as the catalog's `implementation_version`
@@ -364,12 +365,34 @@ fn yara_modules_table() -> CatTable {
             .to_string(),
         ),
     ];
-    // `module` (column 0) uniquely identifies a row (each module name appears
-    // once). `primary_key` is a list of key column-index groups.
-    t.primary_key = vec![vec![0]];
-    // A primary key column is implicitly NOT NULL; declare it so DuckDB and the
-    // linter agree the key column is non-nullable.
-    t.not_null = vec![0];
+    // `module` uniquely identifies a row (each module name appears once). A
+    // primary key column is implicitly NOT NULL; declare it too so DuckDB and
+    // the linter agree the key column is non-nullable. Every module also has a
+    // description. Served as canonical (ENFORCED) constraint records, which
+    // also drive column nullability (an un-recorded column is served nullable).
+    t.constraints = [
+        ("yara_modules.pk", ConstraintKind::PrimaryKey, "module"),
+        (
+            "yara_modules.module.not_null",
+            ConstraintKind::NotNull,
+            "module",
+        ),
+        (
+            "yara_modules.description.not_null",
+            ConstraintKind::NotNull,
+            "description",
+        ),
+    ]
+    .into_iter()
+    .map(|(id, kind, column)| {
+        constraint_record(
+            &ConstraintRecord::new(&["main"], "yara_modules", id, kind)
+                .with_columns(&[&[column]])
+                .enforced(),
+        )
+        .expect("valid constraint record")
+    })
+    .collect();
     t
 }
 
