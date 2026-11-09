@@ -15,7 +15,7 @@ name `yara` (single `main` schema). Rule compilation + scanning via
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.49.2" (arrow 59, protocol vgi.v3 / haybarn 2.0), yara-x = "=1.23.0"
+Cargo.toml                          workspace; pins vgi = "0.50.0" (arrow 59, protocol vgi.v3 / haybarn 2.0), yara-x = "=1.23.0"
 crates/yara-worker/
   src/main.rs                       Worker::new(); registers scalars + tables; set_catalog metadata
   src/scanning.rs                   PURE logic (no Arrow): compile/scan + size bound + unit tests
@@ -33,7 +33,7 @@ marshalling in `arrow_io.rs` + `scalar/*.rs` + `table/*.rs` (thin, harness-teste
 ## Library: yara-x (compile + scan)
 
 Pinned to **`=1.23.0`**, which declares `rust-version = 1.95`, under the
-workspace `rust-version = 1.97` (set by the vgi 0.49 SDK). yara-x minors raise
+workspace `rust-version = 1.97` (set by the vgi 0.50 SDK). yara-x minors raise
 their MSRV regularly (wasmtime/cranelift), so keep the exact pin and check the
 MSRV when bumping. `default-features` are OFF (they
 drag in the heavy `vt`/`dotnet`/`macho`/`lnk`/`cuckoo`/`dex`/`crx` modules and

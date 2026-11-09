@@ -135,7 +135,7 @@ make test-sql                                            # DuckDB SQL end-to-end
 `make test-sql` builds the release worker, points `VGI_YARA_WORKER` at it, and
 runs the [`haybarn-unittest`](https://pypi.org/project/haybarn-unittest/)
 sqllogictest suite under `test/sql/`. The worker speaks VGI protocol vgi.v3 /
-3.1, so it needs haybarn 2.0. Install the runner once with
+3.2, so it needs haybarn 2.0. Install the runner once with
 `uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`.
 
 ## Licensing
