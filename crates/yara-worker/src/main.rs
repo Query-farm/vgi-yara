@@ -112,6 +112,10 @@ fn catalog_metadata(name: &str) -> CatalogModel {
                 "YARA Malware Scanning".to_string(),
             ),
             (
+                "vgi.subtitle".to_string(),
+                "Scan blobs and text for malware with YARA rules, straight from SQL.".to_string(),
+            ),
+            (
                 "vgi.keywords".to_string(),
                 meta::keywords_json(
                     "yara, yara-x, malware, malware scanning, threat hunting, IOC, indicator of \
@@ -219,7 +223,7 @@ fn catalog_metadata(name: &str) -> CatalogModel {
             path: Vec::new(),
             comment: Some("YARA rule compilation and malware-scanning functions.".to_string()),
             tags: vec![
-                ("vgi.title".to_string(), "YARA — main".to_string()),
+                ("vgi.title".to_string(), "YARA functions".to_string()),
                 // VGI413 category registry: an ordered list the worker uses for
                 // navigation/listing sections. Each object declares a matching
                 // `vgi.category` naming one of these.
