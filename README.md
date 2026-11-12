@@ -21,7 +21,7 @@ rewrite of YARA — no native `libyara`/C dependency.
 
 ```sql
 LOAD vgi;
-ATTACH 'yara' (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-yara@v0.3.0');
+ATTACH 'yara' (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-yara@v0.4.0');
 SET search_path = 'yara.main';
 
 -- Per-row predicate over a column of blobs/files.
@@ -51,7 +51,7 @@ Every [GitHub release](https://github.com/Query-farm/vgi-yara/releases) ships a 
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'yara' AS yara (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-yara@v0.3.0');
+ATTACH 'yara' AS yara (TYPE vgi, LOCATION 'github-auto://Query-farm/vgi-yara@v0.4.0');
 
 -- Validate that a YARA ruleset compiles before scanning with it.
 SELECT yara.main.yara_check('rule demo { strings: $a = "malware" condition: $a }') AS compiles;
@@ -60,14 +60,14 @@ SELECT yara.main.yara_check('rule demo { strings: $a = "malware" condition: $a }
 SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = "malware" condition: $a }') AS hit;
 ```
 
-Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.3.0` to move to a newer release.
+Prebuilt binaries cover macOS (Apple silicon), Linux (x86-64 and arm64). `github-auto://` needs an explicit release tag; change `@v0.4.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker; needs a container runtime):
 
   ```sql
-  ATTACH 'yara' AS yara (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-yara:0.3.0');
+  ATTACH 'yara' AS yara (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-yara:0.4.0');
   ```
 
 - **Manual download.** Download the archive for your platform from the [releases page](https://github.com/Query-farm/vgi-yara/releases), verify it against its `.sha256` file (a cosign `.cosign.bundle` is published alongside), unpack it, and set `LOCATION` to the path of the extracted worker executable.
