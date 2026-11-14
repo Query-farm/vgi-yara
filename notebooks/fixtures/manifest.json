@@ -1,0 +1,12 @@
+{
+  "note": "Authored synthetic byte samples; inert markers, no malware payload or real-system data.",
+  "sha256": {
+    "both.bin": "9f7dd0430d07692a454358aad33ac5813df5814ac3d55a7b86c501a1d72b90a5",
+    "orbit-only.bin": "46d27380af82d6d618e163346c67dd7bc617d40836551d082e0aa6582b8bc934",
+    "repeated.bin": "7d4f03e4d53cfe583e7f6e00eb5a57ca0012f539a7f666657cd19a030438de88",
+    "binary.bin": "30898beacd901ceba1f63d232eb9bfb2c71ab1eadfc0d25f578523bac5ad0c68",
+    "mixed.bin": "bf0252b37da2ff56bed38f481fe94fc9806a30c8cd1eb16afd7aeaebcceaa174",
+    "unmatched.bin": "b1cbb19ec118fe4ca7a289616dd821bdeb404624625d82b2770af9b74e7f7096",
+    "empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

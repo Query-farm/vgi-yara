@@ -153,3 +153,7 @@ Written by [Query.Farm](https://query.farm).
 
 Copyright 2026 Query Farm LLC - https://query.farm
 
+
+## Executable notebooks
+
+See [the SQL-first Python notebook](notebooks/README.md) for rule validation, sample coverage, matching rules and byte-level pattern evidence with visualizations.
