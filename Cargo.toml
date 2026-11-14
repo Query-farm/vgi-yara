@@ -1,6 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["crates/yara-worker"]
+members = ["crates/yara-worker", "crates/yara-wasm"]
+# yara-wasm only makes sense for wasm32-unknown-emscripten (it is a staticlib
+# whose ring ops are supplied by emcc's --js-library), so keep it out of the
+# default set: bare `cargo build` / `test` / `clippy` stay native-only and
+# unchanged. Build it explicitly with `wasm/build.sh` or `-p yara-wasm`.
+default-members = ["crates/yara-worker"]
 
 [workspace.package]
 version = "0.4.0"
@@ -15,9 +20,14 @@ repository = "https://github.com/Query-farm/vgi-yara"
 # protocol vgi.v3 / 3.3 (needs the haybarn 2.0 community vgi extension), pulls
 # in vgi-rpc 0.32.4 and arrow 59 transitively, and requires rustc 1.97
 # (workspace rust-version); keep arrow/vgi-rpc here in lockstep with vgi's pins
-# so a single arrow/vgi-rpc resolves.
-vgi = "0.51.0"
-vgi-rpc = { version = "0.32.4", default-features = false, features = ["macros", "stream-codec"] }
+# so a single arrow/vgi-rpc resolves. It also provides the wasm
+# `vgi::wasm_worker!` macro used by yara-wasm. Base (feature-less) so each
+# target can opt in: the native build takes the SDK's real defaults (`sqlite` +
+# `transport-http`), while the wasm build must NOT — tokio/mio/axum and bundled
+# SQLite do not compile for wasm32, and the browser transport serves over a byte
+# channel rather than HTTP.
+vgi = { version = "0.51.0", default-features = false }
+vgi-rpc = { version = "0.32.4", default-features = false, features = ["macros"] }
 arrow-array = "59.2"
 arrow-buffer = "59.2"
 arrow-schema = "59.2"

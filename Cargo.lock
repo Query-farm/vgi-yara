@@ -4102,6 +4102,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "yara-wasm"
+version = "0.4.0"
+dependencies = [
+ "vgi",
+ "yara-worker",
+]
+
+[[package]]
 name = "yara-worker"
 version = "0.4.0"
 dependencies = [
