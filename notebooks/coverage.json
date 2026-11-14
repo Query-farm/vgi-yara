@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "catalogs": {
+    "released": {
+      "path": "coverage/catalog-release.json",
+      "sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+        "notes": "Complete real github-auto v0.4.0 runtime exports: six functions, one table, no views. All seven public objects are local read-only computations or reference metadata without authentication. The static source scanner had missed three macro-registered scalars; runtime exports and complete registration establish the denominator."
+      }
+    },
+    "current": {
+      "path": "coverage/catalog-current.json",
+      "sha256": "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "catalog_sha256": "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5",
+        "notes": "Reviewed complete scalar/table registration and catalog at public main 67fe668d9a7582afb36b49638cf9bb169fcb012c. All worker code under crates and Cargo.toml/Cargo.lock are byte-identical to v0.4.0, as verified by empty Git diff and matching source trees. The notebook executes the release; mappings apply to the identical current interface, not a claim of a separate current-main notebook runtime."
+      }
+    }
+  },
+  "notebooks": [
+    {
+      "path": "01_rule_matches_and_string_occurrences.ipynb",
+      "sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+      "execution": {
+        "path": "coverage/run-01.json",
+        "sha256": "952d98df4519dc1b959e294414286d9ed505165de65dde412f635626d8a5e1f6"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_modules"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "available-modules",
+          "reference": "yara.main.yara_modules"
+        }
+      ],
+      "narrative_cells": [
+        "module-story"
+      ],
+      "result_cells": [
+        "available-modules",
+        "75b3560f"
+      ],
+      "interpretation_cells": [
+        "module-story",
+        "07d99b36"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Choose a module that the running worker actually supports before using it in a rule.",
+        "finding": "The hash row identifies an available feature; the binary rule imports it and verifies a four-byte SHA-256 range during real worker scans. The selected rule compiles, and binary-only/mixed results retain the expected matches. Discovery informs an executed choice rather than only printing metadata."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_check"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "75b3560f",
+          "reference": "yara.main.yara_check"
+        }
+      ],
+      "narrative_cells": [
+        "a47eb73d"
+      ],
+      "result_cells": [
+        "75b3560f"
+      ],
+      "interpretation_cells": [
+        "a47eb73d",
+        "07d99b36"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Validate selected module-dependent rules and retain invalid-source evidence before scanning.",
+        "finding": "The selected source compiles and the intentionally broken source returns false without throwing. Only valid selected rules are passed to scan calls; compilation is not a detection-quality claim."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_matches"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "1d092c6f",
+          "reference": "yara.main.yara_matches"
+        }
+      ],
+      "narrative_cells": [
+        "d545d4af"
+      ],
+      "result_cells": [
+        "1d092c6f",
+        "47d93755"
+      ],
+      "interpretation_cells": [
+        "47d93755",
+        "ace7fe83"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Measure which supplied samples satisfy the selected condition while retaining missing input.",
+        "finding": "Five of seven supplied samples match by default, dropping to three when both markers are required. The eighth missing input remains unknown; a false result is not a safety verdict."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_match_count"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "1d092c6f",
+          "reference": "yara.main.yara_match_count"
+        }
+      ],
+      "narrative_cells": [
+        "d545d4af"
+      ],
+      "result_cells": [
+        "1d092c6f",
+        "47d93755"
+      ],
+      "interpretation_cells": [
+        "47d93755",
+        "75347521"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Distinguish the number of matching rules from the number of repeated string occurrences.",
+        "finding": "The mixed sample matches two rules with four occurrences. Repeated ORBIT remains one rule under the default and no rule when LANDER is required; rule counts do not measure severity."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_first_rule"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "1d092c6f",
+          "reference": "yara.main.yara_first_rule"
+        }
+      ],
+      "narrative_cells": [
+        "d545d4af"
+      ],
+      "result_cells": [
+        "1d092c6f"
+      ],
+      "interpretation_cells": [
+        "d545d4af",
+        "07d99b36"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Label matched samples while checking first-rule presence against predicate and count.",
+        "finding": "The binary-only sample labels binary_marker; unmatched and missing samples retain NULL first-rule results. A first rule reflects iteration order, not priority or severity."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_scan"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "c01b416d",
+          "reference": "yara.main.yara_scan"
+        }
+      ],
+      "narrative_cells": [
+        "520214a0"
+      ],
+      "result_cells": [
+        "c01b416d"
+      ],
+      "interpretation_cells": [
+        "75347521",
+        "07d99b36"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Inspect the rule-level records behind the mixed sample and reconcile them with scalar counts.",
+        "finding": "Two rows retain rule names, namespace and training tags; their count agrees with the scalar two-rule count. Rule records are distinct from four pattern occurrences."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "yara_string_matches"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "sql": [
+        {
+          "cell": "c01b416d",
+          "reference": "yara.main.yara_string_matches"
+        }
+      ],
+      "narrative_cells": [
+        "520214a0"
+      ],
+      "result_cells": [
+        "75347521"
+      ],
+      "interpretation_cells": [
+        "75347521"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root",
+        "reviewed_at": "2026-11-14T17:49:28.208600+00:00",
+        "notebook_sha256": "df1aa83ccef6684578e72a468cbad102dbe0b65a9412883f2b88ba4ff1893189",
+        "catalog_sha256": [
+          "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+          "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5"
+        ],
+        "purpose": "Locate and independently verify each pattern occurrence in the mixed sample.",
+        "finding": "Four hits occupy known byte ranges; ORBIT starts at byte three after two-byte pi and a space. The binary span is four bytes despite its eight-character hex rendering. Every reported slice equals the authored pattern, and the mixed sample remains unchanged in the parameter experiment."
+      }
+    }
+  ]
+}

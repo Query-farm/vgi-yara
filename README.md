@@ -156,4 +156,7 @@ Copyright 2026 Query Farm LLC - https://query.farm
 
 ## Executable notebooks
 
-See [the SQL-first Python notebook](notebooks/README.md) for rule validation, sample coverage, matching rules and byte-level pattern evidence with visualizations.
+See [the executed SQL notebook](notebooks/README.md) for module discovery, rule
+validation, preserved sample coverage, matching rules and byte-level evidence.
+It demonstrates all seven public SQL objects with SVG charts, a parameter experiment
+and an Open in Colab link.

@@ -1,0 +1,523 @@
+{
+  "schema_version": 1,
+  "status": "met",
+  "meets_target": true,
+  "catalogs": {
+    "released": {
+      "catalog_status": "verified",
+      "revision": "v0.4.0",
+      "catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1",
+      "collection_reconciled": true,
+      "denominator": 7,
+      "observed_objects": 7,
+      "required": 7,
+      "verified_count": 7,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 7,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_check"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_first_rule"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_match_count"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_matches"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_modules"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_scan"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_string_matches"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_check",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_check(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_first_rule",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_first_rule(ANY, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_match_count",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_match_count(ANY, VARCHAR) -> INTEGER"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_matches",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_matches(ANY, VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_modules",
+          "kinds": [
+            "table"
+          ],
+          "signatures": [
+            "TABLE(module VARCHAR, description VARCHAR)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_scan",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_scan(ANY, VARCHAR) -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_string_matches",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_string_matches(ANY, VARCHAR) -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    },
+    "current": {
+      "catalog_status": "verified",
+      "revision": "67fe668d9a7582afb36b49638cf9bb169fcb012c",
+      "catalog_sha256": "21d82ed6b52aa6a3a59c939c3a612deb6816bdc338c5c92136afd8ded496c8b5",
+      "collection_reconciled": false,
+      "denominator": 7,
+      "observed_objects": 7,
+      "required": 7,
+      "verified_count": 7,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 0,
+      "runtime_revisions": [
+        "v0.4.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_check"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_first_rule"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_match_count"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_matches"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_modules"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_scan"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_string_matches"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_check",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_check(VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_first_rule",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_first_rule(ANY, VARCHAR) -> VARCHAR"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_match_count",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_match_count(ANY, VARCHAR) -> INTEGER"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_matches",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_matches(ANY, VARCHAR) -> BOOLEAN"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_modules",
+          "kinds": [
+            "table"
+          ],
+          "signatures": [
+            "TABLE(module VARCHAR, description VARCHAR)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_scan",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_scan(ANY, VARCHAR) -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "yara_string_matches",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "yara_string_matches(ANY, VARCHAR) -> TABLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  },
+  "interface_drift": {
+    "known": true,
+    "current_only": [],
+    "released_only": [],
+    "changed": []
+  },
+  "notebooks": {
+    "01_rule_matches_and_string_occurrences.ipynb": {
+      "verified": true,
+      "issues": []
+    }
+  },
+  "examples": [
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_modules"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_check"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_matches"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_match_count"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_first_rule"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_scan"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "yara_string_matches"
+      },
+      "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+      "runtime_revision": "v0.4.0",
+      "runtime_catalog_sha256": "c1218d3695ff3bd6890ac5883e30c9d97528af64d471121f648410cd78b894b1"
+    }
+  ],
+  "issues": []
+}

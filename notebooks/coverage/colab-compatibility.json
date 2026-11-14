@@ -1,0 +1,15 @@
+[
+  {
+    "notebook": "01_rule_matches_and_string_occurrences.ipynb",
+    "notebook_code_cells": 18,
+    "svg_charts": 2,
+    "bad_output_cells": [],
+    "preloaded_libraries_preserved": true,
+    "pip_check": "pass",
+    "python": "3.13",
+    "shared_release": "v0.3.2",
+    "hosted_colab": false,
+    "companion_download": "empty directory with base package, no repository checkout",
+    "shared_package_install": "Base-package upgrade from 0.3.0 to 0.3.2, existing compatible preloaded libraries unchanged."
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "reviewer": "Codex /root",
+  "reviewed_at": "2026-11-14T17:50:14.030817+00:00",
+  "shared_release": "v0.3.2",
+  "default_execution": "18 code cells, 2 SVG charts, all13SQLchecks and4byte-slice checks passed",
+  "experiment": {
+    "REQUIRE_BOTH_MARKERS": true,
+    "status": "passed",
+    "code_cells": 18,
+    "svg_charts": 2,
+    "finding": "Supplied samples with matches fall from5/7to3/7; missing input remains unknown and mixed sample still has2rules/4occurrences."
+  },
+  "editorial_review": "Inspected narrative, all visible SQL, module-driven rule construction, explicit data/missingness, default and both-marker figures. Charts have clear units, nonoverlapping labels and synthetic provenance. Match absence is not described as safety.",
+  "source_validation": "Current source/Cargo files byte-identical to releasedv0.4.0. Public baseline CI43582665882/43582666364 succeeded. No worker source/build files changed. New notebook commit will dispatch CI-only.",
+  "checks": {
+    "ruff": "passed",
+    "format": "passed",
+    "structure": "passed",
+    "output_errors_warnings_local_paths": "none"
+  },
+  "hosted_colab_tested": false
+}

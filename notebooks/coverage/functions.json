@@ -1,0 +1,252 @@
+{
+  "query": "SELECT * FROM duckdb_functions() WHERE database_name='yara'",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "function_name",
+    "alias_of",
+    "function_type",
+    "description",
+    "comment",
+    "tags",
+    "return_type",
+    "parameters",
+    "parameter_types",
+    "varargs",
+    "macro_definition",
+    "has_side_effects",
+    "internal",
+    "extension_name",
+    "function_oid",
+    "examples",
+    "stability",
+    "categories"
+  ],
+  "rows": [
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_string_matches",
+      null,
+      "table",
+      "Scan data against YARA rules; one row per pattern hit (rule, identifier, offset, matched)",
+      null,
+      {
+        "vgi.category": "Match Details",
+        "vgi.doc_llm": "Scan a constant blob/text against a YARA ruleset and return one row per individual pattern hit: which rule and string identifier matched, the byte offset of the hit, and the matched bytes (rendered as UTF-8 when printable, else lowercase hex). Both arguments are bind-time constants. An invalid rule source is a clear DuckDB error; no hits, or hostile/NULL data, yields zero rows. Note: the `offset` output column is a DuckDB reserved keyword, so reference it double-quoted (`\"offset\"`) in SQL.",
+        "vgi.doc_md": "Scan a constant blob against a ruleset; one row per pattern hit. Columns: `rule`, `identifier`, `offset`, `matched`.",
+        "vgi.example_queries": "[{\"description\": \"Scan a constant blob, one row per pattern hit, with the byte offset of each match.\", \"sql\": \"SELECT rule, identifier, \\\"offset\\\", matched FROM yara.main.yara_string_matches('this file contains malware', 'rule demo { strings: $a = \\\"malware\\\" condition: $a }') ORDER BY \\\"offset\\\"\"}]",
+        "vgi.keywords": "[\"yara_string_matches\",\"pattern hit\",\"string match\",\"offset\",\"matched bytes\",\"identifier\",\"per-pattern\",\"forensics\",\"where matched\",\"table function\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"rule\", \"type\": \"VARCHAR\", \"description\": \"Identifier of the matching YARA rule.\"},\n  {\"name\": \"identifier\", \"type\": \"VARCHAR\", \"description\": \"Pattern/string identifier that hit, e.g. $a.\"},\n  {\"name\": \"offset\", \"type\": \"BIGINT\", \"description\": \"Byte offset of the match within the scanned data. 'offset' is a DuckDB reserved keyword \u2014 double-quote it in SQL.\"},\n  {\"name\": \"matched\", \"type\": \"VARCHAR\", \"description\": \"Matched bytes as UTF-8 when printable, else lowercase hex (NULL if unavailable).\"}\n]",
+        "vgi.title": "Scan Data Into Pattern Hits"
+      },
+      null,
+      [
+        "data",
+        "rules"
+      ],
+      [
+        "ANY",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22731,
+      [],
+      null,
+      []
+    ],
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_scan",
+      null,
+      "table",
+      "Scan data against YARA rules; one row per matching rule (rule, namespace, tags)",
+      null,
+      {
+        "vgi.category": "Match Details",
+        "vgi.doc_llm": "Scan a constant blob/text against a YARA ruleset and return one row per matching rule, projecting the rule identifier, the namespace it was compiled under, and the rule's tags as a `VARCHAR[]`. Both arguments are bind-time constants. An invalid rule source is a clear DuckDB error; a ruleset that matches nothing, or hostile/garbage/NULL data, yields zero rows.",
+        "vgi.doc_md": "Scan a constant blob against a ruleset; one row per matching rule. Columns: `rule`, `namespace`, `tags`.",
+        "vgi.example_queries": "[{\"description\": \"Scan a constant blob against a ruleset, one row per matching rule with its namespace.\", \"sql\": \"SELECT rule, namespace FROM yara.main.yara_scan('this file contains malware', 'rule demo { strings: $a = \\\"malware\\\" condition: $a }') ORDER BY rule\"}]",
+        "vgi.keywords": "[\"yara_scan\",\"scan\",\"matching rules\",\"rule\",\"namespace\",\"tags\",\"per-rule\",\"table function\",\"malware triage\",\"threat hunting\"]",
+        "vgi.result_columns_schema": "[\n  {\"name\": \"rule\", \"type\": \"VARCHAR\", \"description\": \"Identifier of the matching YARA rule.\"},\n  {\"name\": \"namespace\", \"type\": \"VARCHAR\", \"description\": \"Namespace the rule was compiled under (default 'default').\"},\n  {\"name\": \"tags\", \"type\": \"VARCHAR[]\", \"description\": \"Tags declared on the matching rule (empty list if none).\"}\n]",
+        "vgi.title": "Scan Data Into Matching Rules"
+      },
+      null,
+      [
+        "data",
+        "rules"
+      ],
+      [
+        "ANY",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22730,
+      [],
+      null,
+      []
+    ],
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_first_rule",
+      null,
+      "scalar",
+      "Identifier of the first matching YARA rule, or NULL if none match",
+      null,
+      {
+        "vgi.category": "Scanning",
+        "vgi.doc_llm": "Return the identifier of the first YARA rule that matches the data (`BLOB` or `VARCHAR` bytes), or NULL if no rule matches. Either operand NULL \u2192 NULL. Useful for labelling a row with the signature that triggered. An invalid rule source raises a clear error; scanning untrusted data is total.",
+        "vgi.doc_md": "Return the identifier of the first YARA rule that matches the data, or `NULL` if none match (either argument NULL \u2192 NULL).",
+        "vgi.example_queries": "[{\"description\": \"Return the identifier of the first YARA rule that matches the data.\", \"sql\": \"SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \\\"malware\\\" condition: $a }');\"}]",
+        "vgi.keywords": "[\"yara_first_rule\",\"first match\",\"rule name\",\"label\",\"which rule\",\"signature name\",\"matching rule identifier\"]",
+        "vgi.title": "YARA First Matching Rule"
+      },
+      "VARCHAR",
+      [
+        "data",
+        "rules"
+      ],
+      [
+        "ANY",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22727,
+      [
+        "SELECT yara.main.yara_first_rule('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_match_count",
+      null,
+      "scalar",
+      "Number of YARA rules that match the data (INT)",
+      null,
+      {
+        "vgi.category": "Scanning",
+        "vgi.doc_llm": "Return the number of YARA rules in the ruleset that match the data (`BLOB` or `VARCHAR` bytes), as an INT (0 if none match). Either operand NULL \u2192 NULL. Useful for ranking rows by how many signatures they trigger. An invalid rule source raises a clear error; scanning untrusted data is total.",
+        "vgi.doc_md": "Return the number of YARA rules in the ruleset that match the data, as an `INT` (0 if none; either argument NULL \u2192 NULL).",
+        "vgi.example_queries": "[{\"description\": \"Count how many YARA rules in a ruleset match the data.\", \"sql\": \"SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \\\"evil\\\" condition: $a } rule b { strings: $b = \\\"worm\\\" condition: $b }');\"}]",
+        "vgi.keywords": "[\"yara_match_count\",\"count\",\"number of matches\",\"how many rules\",\"match tally\",\"severity ranking\"]",
+        "vgi.title": "YARA Matching Rule Count"
+      },
+      "INTEGER",
+      [
+        "data",
+        "rules"
+      ],
+      [
+        "ANY",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22728,
+      [
+        "SELECT yara.main.yara_match_count('evil worm', 'rule a { strings: $a = \"evil\" condition: $a } rule b { strings: $b = \"worm\" condition: $b }');"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_matches",
+      null,
+      "scalar",
+      "True if the data matches ANY of the YARA rules (BLOB/VARCHAR data, VARCHAR rules)",
+      null,
+      {
+        "vgi.category": "Scanning",
+        "vgi.doc_llm": "Return true if the data (`BLOB` or `VARCHAR` bytes) matches ANY rule in the YARA ruleset, false if none match. Either operand NULL \u2192 NULL. A column-friendly predicate for filtering rows whose contents hit a ruleset. An invalid rule source raises a clear error; scanning the untrusted data is total and never crashes the worker.",
+        "vgi.doc_md": "Return `true` if the data matches any rule in the YARA ruleset, else `false` (either argument NULL \u2192 NULL).",
+        "vgi.example_queries": "[{\"description\": \"Test whether a blob/text matches any rule in a YARA ruleset.\", \"sql\": \"SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \\\"malware\\\" condition: $a }');\"}]",
+        "vgi.keywords": "[\"yara_matches\",\"match\",\"predicate\",\"scan\",\"does it match\",\"malware detection\",\"filter\",\"contains malware\",\"boolean scan\"]",
+        "vgi.title": "YARA Matches Any Rule"
+      },
+      "BOOLEAN",
+      [
+        "data",
+        "rules"
+      ],
+      [
+        "ANY",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22729,
+      [
+        "SELECT yara.main.yara_matches('this file contains malware', 'rule demo { strings: $a = \"malware\" condition: $a }');"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "yara",
+      "22592",
+      "main",
+      "yara_check",
+      null,
+      "scalar",
+      "True if the YARA rule source compiles, false otherwise (validation)",
+      null,
+      {
+        "vgi.category": "Rule Validation",
+        "vgi.doc_llm": "Return true if the given YARA rule source compiles into a valid ruleset, false otherwise. This is the dedicated \"does it compile?\" predicate: unlike the scan scalars, a non-compiling source returns false rather than raising an error. NULL input yields NULL. Use it to validate user-supplied rules before scanning.",
+        "vgi.doc_md": "Return `true` if the YARA rule source compiles, else `false` (NULL \u2192 NULL).",
+        "vgi.example_queries": "[{\"description\": \"Validate that a YARA ruleset compiles before using it to scan.\", \"sql\": \"SELECT yara.main.yara_check('rule demo { strings: $a = \\\"malware\\\" condition: $a }');\"}]",
+        "vgi.keywords": "[\"yara_check\",\"validate\",\"compile\",\"rule validation\",\"lint rules\",\"syntax check\",\"ruleset valid\",\"does it compile\"]",
+        "vgi.title": "Validate YARA Ruleset Compiles"
+      },
+      "BOOLEAN",
+      [
+        "rules"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22726,
+      [
+        "SELECT yara.main.yara_check('rule demo { strings: $a = \"malware\" condition: $a }');"
+      ],
+      "CONSISTENT",
+      []
+    ]
+  ]
+}

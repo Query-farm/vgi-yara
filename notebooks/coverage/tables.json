@@ -1,0 +1,49 @@
+{
+  "query": "SELECT * FROM duckdb_tables() WHERE database_name='yara'",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "table_name",
+    "table_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "has_primary_key",
+    "estimated_size",
+    "column_count",
+    "index_count",
+    "check_constraint_count",
+    "sql"
+  ],
+  "rows": [
+    [
+      "yara",
+      22592,
+      "main",
+      22733,
+      "yara_modules",
+      22793,
+      "YARA-X modules compiled into this worker that a rule may import, one per row.",
+      {
+        "domain": "security",
+        "vgi.category": "Reference",
+        "vgi.doc_llm": "The YARA-X modules compiled into this worker, one row per module. Query it to discover which modules a rule can `import` (e.g. `pe`, `elf`, `hash`, `math`, `string`, `time`, `console`) before writing a rule that relies on one \u2014 a rule that imports a module not listed here will not compile.",
+        "vgi.doc_md": "# yara_modules\n\nThe YARA-X **modules** built into this worker, one per row: the `module` name a rule may `import` (e.g. `pe`, `elf`, `hash`, `math`, `string`, `time`, `console`) and a `description` of what it inspects. A rule that imports a module not listed here will fail to compile.",
+        "vgi.example_queries": "[\n  {\"description\": \"List every YARA-X module a rule may import on this worker, alphabetically.\", \"sql\": \"SELECT module, description FROM yara.main.yara_modules ORDER BY module\"},\n  {\"description\": \"Check whether the PE module is available before writing a rule that imports it.\", \"sql\": \"SELECT count(*) AS pe_available FROM yara.main.yara_modules WHERE module = 'pe'\"}\n]",
+        "vgi.keywords": "[\"yara modules\",\"import\",\"available modules\",\"pe\",\"elf\",\"hash\",\"math\",\"string\",\"time\",\"console\",\"module reference\",\"yara_modules\",\"discovery\",\"which modules\"]",
+        "vgi.title": "Supported YARA Modules"
+      },
+      false,
+      false,
+      true,
+      0,
+      2,
+      1,
+      0,
+      "CREATE TABLE yara_modules(module VARCHAR, description VARCHAR NOT NULL, PRIMARY KEY(module));"
+    ]
+  ]
+}

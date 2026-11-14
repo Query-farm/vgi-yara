@@ -1,0 +1,14 @@
+{
+  "released_commit": "4aeefae14d55932bf269825ce7f1574845fd6993",
+  "current_commit": "67fe668d9a7582afb36b49638cf9bb169fcb012c",
+  "reviewed_paths": [
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "git_diff": "empty",
+  "released_crates_tree": "2b317865c064f96c53389879ce375f69e55d7033",
+  "current_crates_tree": "2b317865c064f96c53389879ce375f69e55d7033",
+  "reviewer": "Codex /root",
+  "reviewed_at": "2026-11-14T17:46:51.784724+00:00"
+}
