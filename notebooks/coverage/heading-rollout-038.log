@@ -1,0 +1,5 @@
+Shared notebook tools v0.3.8; complete default runs in fresh kernels.
+Updated vgi-example-notebooks v0.3.6 (31eb1be7) -> v0.3.8 (025173bd)
+Running 01_rule_matches_and_string_occurrences.ipynb ...
+OK: 18 code cells, 2 charts, 3.2s
+All saved output cells are byte-identical to the previous publication. Analytical code is unchanged.

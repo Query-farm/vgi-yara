@@ -37,7 +37,7 @@ uv run --locked vgi-notebooks --parameters '{"REQUIRE_BOTH_MARKERS":true}' --out
 
 The local environment uses the shared package's `[runner]` extra. The notebook
 installs its base package only. Branding, setup, runner, SVG publication and the
-[standard](https://github.com/Query-farm/vgi-example-notebooks/blob/v0.3.6/docs/standard.md)
+[standard](https://github.com/Query-farm/vgi-example-notebooks/blob/v0.3.8/docs/standard.md)
 live in [vgi-example-notebooks](https://github.com/Query-farm/vgi-example-notebooks).
 `yara_example.py` contains the two charts and result interpretations; the analytical
 worker calls remain in visible SQL. Keep `charts/` with the saved notebook for

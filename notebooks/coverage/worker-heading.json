@@ -1,0 +1,26 @@
+{
+  "repository": "Query-farm/vgi-yara",
+  "title": "YARA Malware Scanning",
+  "subtitle": "Scan blobs and text for malware with YARA rules, straight from SQL.",
+  "evidence_sha256": "2d619827a2d5f5197166a214c9bf1b48e780fd328456f305bc2dc97110d86581",
+  "provenance": "Actual catalog tags from the released runtime used by the notebook",
+  "worker_release": "v0.4.0",
+  "runtime_export": {
+    "attach": "ATTACH 'yara' (TYPE vgi,LOCATION 'github-auto://Query-farm/vgi-yara@v0.4.0');",
+    "query": "SELECT database_name, comment, map_extract_value(tags,'vgi.title') AS title, map_extract_value(tags,'vgi.subtitle') AS subtitle FROM duckdb_databases() WHERE map_extract_value(tags,'vgi.title') IS NOT NULL",
+    "columns": [
+      "database_name",
+      "comment",
+      "title",
+      "subtitle"
+    ],
+    "rows": [
+      [
+        "yara",
+        "Defensive YARA-X malware scanning: compile YARA rules and scan blobs/text for matches, all in SQL over Apache Arrow.",
+        "YARA Malware Scanning",
+        "Scan blobs and text for malware with YARA rules, straight from SQL."
+      ]
+    ]
+  }
+}
