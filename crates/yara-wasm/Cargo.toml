@@ -1,3 +1,9 @@
+# DISABLED (2026-11-17): the browser build can't link. yara-x 1.23 selects its
+# wasm-bindgen browser runtime for every wasm target, and the VGI browser worker
+# is built with emscripten, which can't provide wasm-bindgen's JavaScript glue
+# (undefined __wbg___wbindgen_* symbols). wasm/build.sh (which the release
+# workflow keys its wasm32 job on) was removed; restore it from git history once
+# yara-x can run under emscripten.
 [package]
 name = "yara-wasm"
 version.workspace = true
