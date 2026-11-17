@@ -19,11 +19,3 @@ path = "src/lib.rs"
 [dependencies]
 yara-worker = { path = "../yara-worker" }
 vgi = { workspace = true }
-
-# yara-x 1.23.0 does not compile against wasm-bindgen 0.2.130, whose closures
-# gained an UnwindSafe bound that yara-x's browser runtime doesn't meet
-# (yara-x src/wasm/runtime/browser.rs). Pin the versions yara-x itself locks
-# until a yara-x release builds with newer wasm-bindgen.
-[target.'cfg(target_family = "wasm")'.dependencies]
-wasm-bindgen = "=0.2.129"
-js-sys = "=0.3.106"

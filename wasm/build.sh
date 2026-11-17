@@ -70,8 +70,11 @@ mkdir -p "$OUT"
 # and without them wasm-ld rejects --shared-memory. --no-entry is needed because
 # a transitive dependency may declare a cdylib crate-type, which emcc would
 # otherwise try to link as a program with a main().
+# -C panic=abort matches the panic_abort std built below. Without it the
+# emscripten target compiles with panic=unwind, and wasm-bindgen then requires
+# UnwindSafe closures, which yara-x's browser runtime doesn't provide.
 echo "==> cargo build ($TARGET)"
-RUSTFLAGS="-C target-feature=+atomics,+bulk-memory,+mutable-globals${EXTRA_TF:-} -C opt-level=${OPT_LEVEL:-3} -C link-args=-pthread -C link-arg=--no-entry" \
+RUSTFLAGS="-C panic=abort -C target-feature=+atomics,+bulk-memory,+mutable-globals${EXTRA_TF:-} -C opt-level=${OPT_LEVEL:-3} -C link-args=-pthread -C link-arg=--no-entry" \
   cargo +nightly build \
   -p yara-wasm \
   --target "$TARGET" \
