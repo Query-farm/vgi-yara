@@ -15,7 +15,7 @@ name `yara` (single `main` schema). Rule compilation + scanning via
 ## Layout
 
 ```
-Cargo.toml                          workspace; pins vgi = "0.51.0" (arrow 59, protocol vgi.v3 / haybarn 2.0), yara-x = "=1.23.0"
+Cargo.toml                          workspace; pins vgi = "0.53.1" (arrow 59, protocol vgi.v3 / haybarn 2.0), yara-x = "=1.23.0"
 crates/yara-worker/
   src/main.rs                       Worker::new(); registers scalars + tables; set_catalog metadata
   src/scanning.rs                   PURE logic (no Arrow): compile/scan + size bound + unit tests

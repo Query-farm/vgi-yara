@@ -40,4 +40,4 @@ VGI_YARA_WORKER="$PWD/target/release/yara-worker" \
 
 Or use the Makefile target `make test-sql`, which builds the release worker and
 runs the suite against a `haybarn-unittest` 2.0 on `PATH`
-(`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`).
+(`uv tool install --prerelease allow 'haybarn-unittest>=2.0.1rc3,<2.1'`).
